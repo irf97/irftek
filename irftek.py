@@ -191,31 +191,11 @@ def fetch_quote(sess,t):
         m=j["chart"]["result"][0]["meta"]
         return {"px":_num(m.get("regularMarketPrice")),"src":"yahoo"}
     except Exception: return None
-import re as _re
-def _cboe_chain(j):
-    """CBOE delayed-quotes JSON -> same row shape as parse_chain."""
-    rows=((j.get("data") or {}).get("options")) or []
-    out=[]
-    for o in rows:
-        m=_re.search(r"([0-9]{6})([CP])([0-9]{8})$",str(o.get("option","")))
-        if not m: continue
-        yymmdd,cp,k=m.groups()
-        iv=_num(o.get("iv"))
-        out.append({"exp":f"20{yymmdd[:2]}-{yymmdd[2:4]}-{yymmdd[4:6]}","K":int(k)/1000,"cp":cp,
-                    "last":_num(o.get("last_trade_price")),"bid":_num(o.get("bid")),
-                    "ask":_num(o.get("ask")),"iv":round(iv*100,2) if iv and iv>0 else None})
-    return out
 def fetch_chain(sess,t):
     try:
         u=(f"https://api.nasdaq.com/api/quote/{t}/option-chain?assetclass=stocks"
            f"&limit=600&fromdate=all&todate=undefined&excode=oprac&callput=callput&money=all&type=all")
-        ch=parse_chain(sess.get(u,headers=UA,timeout=15).json())
-        if ch: return ch
-    except Exception: pass
-    try:  # CBOE delayed chains — works where Nasdaq gates datacenter IPs
-        j=sess.get(f"https://cdn.cboe.com/api/global/delayed_quotes/options/{t}.json",
-                   headers=UA,timeout=15).json()
-        return _cboe_chain(j)
+        return parse_chain(sess.get(u,headers=UA,timeout=15).json())
     except Exception: return []
 def _hist_df(j):
     """Yahoo v8 chart JSON -> dict of OHLCV lists (pure stdlib)."""
@@ -620,11 +600,7 @@ def cmd_feed(tier):
         q=fetch_quote(sess,t)
         if q and q.get("px"): feed["quotes"][t]=q
         ch=fetch_chain(sess,t)
-        if ch:
-            px=(q or {}).get("px")
-            if px:  # slim to app-relevant contracts: our expiries, 0.7-1.4 moneyness
-                ch=[r for r in ch if r["exp"] in EXPIRIES and 0.7<=r["K"]/px<=1.4]
-            feed["chains"][t]=ch[:220]
+        if ch: feed["chains"][t]=ch
         df=hist.get(t)
         st=score_name(df) if df is not None else None
         if st: feed["states"][t]=st["state"]
@@ -682,8 +658,6 @@ def selftest():
     nq={"data":{"chart":[{"z":{"open":"10.0","high":"10.5","low":"9.8","close":"10.2","volume":"1,000,000"}} for _ in range(65)]}}
     dfn=_nq_hist(nq)
     ck("nasdaq history parser",dfn is not None and len(dfn["Close"])==65 and abs(dfn["Volume"][0]-1e6)<1)
-    cb=_cboe_chain({"data":{"options":[{"option":"MRVL260821C00280000","bid":10,"ask":11,"last_trade_price":10.5,"iv":0.55},{"option":"BAD"}]}})
-    ck("cboe chain parser",len(cb)==1 and cb[0]["exp"]=="2026-08-21" and cb[0]["K"]==280 and cb[0]["cp"]=="C" and cb[0]["iv"]==55.0)
     print(f"SELFTEST: {len(P)} passed, {len(F)} failed")
     for n,d in F: print(f"  FAIL {n} [{d}]")
     return not F
