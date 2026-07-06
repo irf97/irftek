@@ -1,8 +1,8 @@
 name: daily-feed
 on:
   schedule:
-    - cron: "15 21 * * 1-5"    # 21:15 UTC ≈ just after US close, weekdays
-  workflow_dispatch: {}        # manual "Run workflow" button
+    - cron: "15 21 * * 1-5"
+  workflow_dispatch: {}
 permissions:
   contents: write
 jobs:
@@ -13,11 +13,16 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install requests
-      - run: python irftek.py feed --tier all
-      - name: commit fresh data
+      - name: run feed (tee log)
+        run: |
+          set -o pipefail
+          python -X faulthandler irftek.py feed --tier terminal 2>&1 | tee feed.log
+        continue-on-error: true
+      - name: commit results + log
+        if: always()
         run: |
           git config user.name "irftek-bot"
           git config user.email "bot@irftek.local"
-          git add terminal_data.js
+          git add -f feed.log terminal_data.js 2>/dev/null || git add -f feed.log
           git commit -m "feed $(date -u +%F_%H:%M)" || echo "no change"
           git push
