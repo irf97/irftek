@@ -1,8 +1,69 @@
-[MRVL] px=254.66 (nasdaq) · hist=259 bars · state=NO SETUP · chain=0
-[NVTS] px=15.63 (nasdaq) · hist=259 bars · state=NO SETUP · chain=0
-[CRWV] px=87.03 (nasdaq) · hist=259 bars · state=NO SETUP · chain=0
-[AVGO] px=375.335 (nasdaq) · hist=259 bars · state=NO SETUP · chain=0
-[AMD] px=559.2001 (nasdaq) · hist=259 bars · state=NO SETUP · chain=0
-[MU] px=1004.56 (nasdaq) · hist=259 bars · state=NO SETUP · chain=0
-[OKTA] px=147.98 (nasdaq) · hist=259 bars · state=EXTENDED (don't chase) · chain=0
+[feed] 67 names — several minutes
+[NVTS] px=15.69 (nasdaq) · hist=259 bars · state=NO SETUP · chain=1030
+[CRWV] px=87.21 (nasdaq) · hist=259 bars · state=NO SETUP · chain=2024
+[MRVL] px=254.67 (nasdaq) · hist=259 bars · state=NO SETUP · chain=2720
+[AVGO] px=375.885 (nasdaq) · hist=259 bars · state=NO SETUP · chain=3692
+[AMD] px=559.31 (nasdaq) · hist=259 bars · state=NO SETUP · chain=5534
+[MU] px=1006.64 (nasdaq) · hist=259 bars · state=NO SETUP · chain=11510
+[OKTA] px=147.69 (nasdaq) · hist=259 bars · state=EXTENDED (don't chase) · chain=1744
+[NVDA] px=196.63 (nasdaq) · hist=259 bars · state=NO SETUP · chain=3962
+[ARM] px=326.57 (nasdaq) · hist=259 bars · state=NO SETUP · chain=2976
+[INTC] px=124.15 (nasdaq) · hist=259 bars · state=NO SETUP · chain=2198
+[AAPL] px=312.86 (nasdaq) · hist=259 bars · state=BASING (watch) · chain=3504
+[MSFT] px=385.07 (nasdaq) · hist=259 bars · state=NO SETUP · chain=3710
+[GOOGL] px=364.27 (nasdaq) · hist=259 bars · state=NO SETUP · chain=4890
+[META] px=592.4592 (nasdaq) · hist=259 bars · state=NO SETUP · chain=6998
+[AMZN] px=244.72 (nasdaq) · hist=259 bars · state=NO SETUP · chain=2450
+[DELL] px=411.0 (nasdaq) · hist=259 bars · state=BASING (watch) · chain=3114
+[QCOM] px=187.32 (nasdaq) · hist=259 bars · state=NO SETUP · chain=1518
+[TSLA] px=416.8251 (nasdaq) · hist=259 bars · state=NO SETUP · chain=5932
+[NOW] px=109.075 (nasdaq) · hist=259 bars · state=NO SETUP · chain=2020
+[NET] px=248.67 (nasdaq) · hist=259 bars · state=BASING (watch) · chain=1554
+[DDOG] px=258.38 (nasdaq) · hist=259 bars · state=BASING (watch) · chain=1870
+[CRWD] px=201.565 (nasdaq) · hist=259 bars · state=BASING (watch) · chain=7146
+[PANW] px=357.38 (nasdaq) · hist=259 bars · state=EXTENDED (don't chase) · chain=3364
+[SERV] px=6.46 (nasdaq) · hist=259 bars · state=NO SETUP · chain=570
+[ONDS] px=7.725 (nasdaq) · hist=259 bars · state=NO SETUP · chain=660
+[AAOI] px=127.44 (nasdaq) · hist=259 bars · state=NO SETUP · chain=1730
+[POET] px=9.0601 (nasdaq) · hist=259 bars · state=NO SETUP · chain=860
+[RR] px=2.12 (nasdaq) · hist=259 bars · state=NO SETUP · chain=206
+[CBRS] px=197.09 (nasdaq) · hist=0 bars · state=— (no history) · chain=1790
+[IONQ] px=50.54 (nasdaq) · hist=259 bars · state=NO SETUP · chain=1054
+[TEM] px=60.91 (nasdaq) · hist=259 bars · state=BASING (watch) · chain=886
+[QBTS] px=23.25 (nasdaq) · hist=259 bars · state=NO SETUP · chain=964
+[RGTI] px=18.4201 (nasdaq) · hist=259 bars · state=NO SETUP · chain=1188
+[RXRX] px=4.02 (nasdaq) · hist=259 bars · state=BASING (watch) · chain=344
+[SOUN] px=6.915 (nasdaq) · hist=259 bars · state=NO SETUP · chain=444
+[HIMX] px=14.49 (nasdaq) · hist=259 bars · state=NO SETUP · chain=328
+[VICR] px=294.47 (nasdaq) · hist=259 bars · state=NO SETUP · chain=692
+[POWI] px=75.59 (nasdaq) · hist=259 bars · state=NO SETUP · chain=206
+[MPWR] px=1357.7775 (nasdaq) · hist=259 bars · state=NO SETUP · chain=2016
+[CRUS] px=150.0 (nasdaq) · hist=259 bars · state=NO SETUP · chain=284
+[AMKR] px=71.745 (nasdaq) · hist=259 bars · state=NO SETUP · chain=410
+[AEHR] px=75.31 (nasdaq) · hist=259 bars · state=NO SETUP · chain=1106
+[FORM] px=122.2214 (nasdaq) · hist=259 bars · state=NO SETUP · chain=324
+[TTMI] px=154.09 (nasdaq) · hist=259 bars · state=NO SETUP · chain=542
+[SNDK] px=1773.54 (nasdaq) · hist=259 bars · state=NO SETUP · chain=12772
+[SITM] px=628.49 (nasdaq) · hist=259 bars · state=NO SETUP · chain=852
+[CEVA] px=44.26 (nasdaq) · hist=259 bars · state=NO SETUP · chain=138
+[AIP] px=35.46 (nasdaq) · hist=259 bars · state=NO SETUP · chain=172
+[VUZI] px=2.775 (nasdaq) · hist=259 bars · state=NO SETUP · chain=104
+[SLAB] px=218.38 (nasdaq) · hist=259 bars · state=BASING (watch) · chain=626
+[LSCC] px=137.77 (nasdaq) · hist=259 bars · state=BASING (watch) · chain=404
+[AMBA] px=82.87 (nasdaq) · hist=259 bars · state=NO SETUP · chain=1226
+[SAIL] px=15.7826 (nasdaq) · hist=259 bars · state=NO SETUP · chain=94
+[MDB] px=356.44 (nasdaq) · hist=259 bars · state=NO SETUP · chain=2478
+[PATH] px=12.2036 (nasdaq) · hist=259 bars · state=NO SETUP · chain=718
+[LITE] px=724.71 (nasdaq) · hist=259 bars · state=NO SETUP · chain=5252
+[IBM] px=299.26 (nasdaq) · hist=259 bars · state=NO SETUP · chain=2130
+[TER] px=385.78 (nasdaq) · hist=259 bars · state=NO SETUP · chain=2016
+[ISRG] px=431.393 (nasdaq) · hist=259 bars · state=NO SETUP · chain=2296
+[CRM] px=167.4 (nasdaq) · hist=259 bars · state=NO SETUP · chain=1586
+[ESTC] px=58.35 (nasdaq) · hist=259 bars · state=NO SETUP · chain=366
+[DT] px=45.77 (nasdaq) · hist=259 bars · state=BASING (watch) · chain=228
+[AKAM] px=113.96 (nasdaq) · hist=259 bars · state=NO SETUP · chain=1504
+[FSLY] px=18.5 (nasdaq) · hist=259 bars · state=NO SETUP · chain=602
+[KOPN] px=4.145 (nasdaq) · hist=259 bars · state=NO SETUP · chain=392
+[QUBT] px=9.37 (nasdaq) · hist=259 bars · state=NO SETUP · chain=732
+[SDGR] px=17.14 (nasdaq) · hist=259 bars · state=NO SETUP · chain=130
 wrote terminal_data.js (quotes + chains + scanner states)
