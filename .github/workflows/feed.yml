@@ -1,0 +1,23 @@
+name: daily-feed
+on:
+  schedule:
+    - cron: "15 21 * * 1-5"    # 21:15 UTC ≈ just after US close, weekdays
+  workflow_dispatch: {}        # manual "Run workflow" button
+permissions:
+  contents: write
+jobs:
+  feed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install requests
+      - run: python irftek.py feed --tier all
+      - name: commit fresh data
+        run: |
+          git config user.name "irftek-bot"
+          git config user.email "bot@irftek.local"
+          git add terminal_data.js
+          git commit -m "feed $(date -u +%F_%H:%M)" || echo "no change"
+          git push
