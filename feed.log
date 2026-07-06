@@ -1,0 +1,8 @@
+[MRVL] px=254.66 (nasdaq) · hist=259 bars · state=NO SETUP · chain=0
+[NVTS] px=15.63 (nasdaq) · hist=259 bars · state=NO SETUP · chain=0
+[CRWV] px=87.03 (nasdaq) · hist=259 bars · state=NO SETUP · chain=0
+[AVGO] px=375.335 (nasdaq) · hist=259 bars · state=NO SETUP · chain=0
+[AMD] px=559.2001 (nasdaq) · hist=259 bars · state=NO SETUP · chain=0
+[MU] px=1004.56 (nasdaq) · hist=259 bars · state=NO SETUP · chain=0
+[OKTA] px=147.98 (nasdaq) · hist=259 bars · state=EXTENDED (don't chase) · chain=0
+wrote terminal_data.js (quotes + chains + scanner states)
