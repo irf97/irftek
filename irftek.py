@@ -236,13 +236,18 @@ def _hist_df(j):
     return out if out["Close"] else None
 
 def _nq_hist(j):
-    """Nasdaq chart JSON -> dict of OHLCV lists."""
+    """Nasdaq chart JSON -> dict of OHLCV lists (chronological, order-guarded)."""
     rows=((j.get("data") or {}).get("chart")) or []
-    out={"Open":[],"High":[],"Low":[],"Close":[],"Volume":[]}
-    for r in rows:
+    recs=[]
+    for i,r in enumerate(rows):
         z=r.get("z") or r
         vals=[_num(z.get(k)) for k in ("open","high","low","close","volume")]
         if any(x is None for x in vals): continue
+        d=norm_date(z.get("dateTime") or z.get("date") or "")
+        recs.append((d or f"~{i:06d}",vals))
+    recs.sort(key=lambda x:x[0])          # dates sort chronologically; undated keep order after
+    out={"Open":[],"High":[],"Low":[],"Close":[],"Volume":[]}
+    for _,vals in recs:
         for k,x in zip(("Open","High","Low","Close","Volume"),vals): out[k].append(x)
     return out if out["Close"] else None
 
@@ -691,6 +696,11 @@ def selftest():
     nq={"data":{"chart":[{"z":{"open":"10.0","high":"10.5","low":"9.8","close":"10.2","volume":"1,000,000"}} for _ in range(65)]}}
     dfn=_nq_hist(nq)
     ck("nasdaq history parser",dfn is not None and len(dfn["Close"])==65 and abs(dfn["Volume"][0]-1e6)<1)
+    desc={"data":{"chart":[{"z":{"dateTime":f"07/{5-i:02d}/2026","open":"1","high":"1","low":"1",
+          "close":str(10+i),"volume":"1"}} for i in range(4)]}}   # newest-first: closes 10,11,12,13
+    dfd=_nq_hist(desc)
+    ck("nasdaq history order-guard (descending input -> chronological)",
+       dfd is not None and dfd["Close"]==[13.0,12.0,11.0,10.0])
     cb=_cboe_chain({"data":{"options":[{"option":"MRVL260821C00280000","bid":10,"ask":11,"last_trade_price":10.5,"iv":0.55},{"option":"BAD"}]}})
     ck("cboe chain parser",len(cb)==1 and cb[0]["exp"]=="2026-08-21" and cb[0]["K"]==280 and cb[0]["cp"]=="C" and cb[0]["iv"]==55.0)
     print(f"SELFTEST: {len(P)} passed, {len(F)} failed")
