@@ -620,7 +620,11 @@ def cmd_feed(tier):
         q=fetch_quote(sess,t)
         if q and q.get("px"): feed["quotes"][t]=q
         ch=fetch_chain(sess,t)
-        if ch: feed["chains"][t]=ch
+        if ch:
+            px=(q or {}).get("px")
+            if px:  # slim to app-relevant contracts: our expiries, 0.7-1.4 moneyness
+                ch=[r for r in ch if r["exp"] in EXPIRIES and 0.7<=r["K"]/px<=1.4]
+            feed["chains"][t]=ch[:220]
         df=hist.get(t)
         st=score_name(df) if df is not None else None
         if st: feed["states"][t]=st["state"]
