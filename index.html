@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0B0E14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>IrfTek</title>
+<style>
+:root{--void:#0B0E14;--panel:#131926;--panel2:#0F141F;--line:#1E2739;--ink:#E8ECF4;--muted:#8B94A8;--dim:#5A6478;
+--coil:#E8B44C;--go:#46C08A;--ext:#E5534B;--edit:#5CC8E8;--repair:#7A8CC8;
+--mono:ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Menlo,Consolas,monospace;
+--sys:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--void);color:var(--ink);font-family:var(--sys);font-size:15px;line-height:1.45;padding-bottom:74px}
+.mono{font-family:var(--mono)}
+header{position:sticky;top:0;z-index:20;background:linear-gradient(var(--void) 85%,transparent);padding:12px 14px 8px}
+h1{font-family:var(--mono);font-size:15px;letter-spacing:.08em;display:flex;align-items:center;gap:8px}
+h1 span.t{color:var(--coil)}
+.feedtag{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:5px}
+.feedtag.live{background:rgba(70,192,138,.15);color:var(--go)}
+.feedtag.seed{background:rgba(232,180,76,.12);color:var(--coil)}
+.rbtn{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--edit);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 12px}
+.sub{font-size:11px;color:var(--muted);margin-top:3px;font-family:var(--mono)}
+main{padding:6px 12px}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--panel2);border-top:1px solid var(--line);z-index:30}
+nav button{flex:1;background:none;border:none;color:var(--dim);font-family:var(--mono);font-size:11px;padding:12px 0 max(12px,env(safe-area-inset-bottom));letter-spacing:.06em}
+nav button.on{color:var(--coil)}
+.chips{display:flex;gap:6px;margin:8px 0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.chip{flex:0 0 auto;font-family:var(--mono);font-size:10.5px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:var(--panel2)}
+.chip.on{border-color:var(--edit);color:var(--edit)}
+.row{display:flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:10px 11px;margin-bottom:8px}
+.row .tk{font-family:var(--mono);font-weight:700;font-size:14.5px;width:52px}
+.row .px{font-family:var(--mono);font-size:12px;color:var(--muted);width:58px;text-align:right}
+.row .st{font-family:var(--mono);font-size:9px;padding:3px 6px;border-radius:5px;width:64px;text-align:center}
+.row .gt{font-family:var(--mono);font-size:9.5px;font-weight:700;padding:3px 7px;border-radius:5px}
+.row .bs{font-family:var(--mono);font-size:10.5px;width:74px;text-align:right}
+.row .cd{font-size:10px;color:var(--dim);flex:1;text-align:right;font-family:var(--mono)}
+.sC{background:rgba(70,192,138,.14);color:var(--go)} .sB{background:rgba(232,180,76,.13);color:var(--coil)}
+.sE{background:rgba(229,83,75,.14);color:var(--ext)} .sN{background:rgba(139,148,168,.12);color:var(--muted)} .sV{background:rgba(122,140,200,.14);color:var(--repair)}
+.gGO{background:rgba(70,192,138,.2);color:var(--go)} .gWS{background:rgba(70,192,138,.1);color:#8fd9b6}
+.gWP{background:rgba(232,180,76,.16);color:var(--coil)} .gPO,.gTO{background:rgba(139,148,168,.12);color:var(--muted)}
+.gSD,.gND,.gNP{background:rgba(90,100,120,.12);color:var(--dim)}
+.wrow{display:flex;gap:8px;align-items:flex-end;margin:6px 0 4px}
+.wrow label{flex:1;font-size:9px;color:var(--dim);text-transform:uppercase}
+.wrow input{font-family:var(--mono);width:100%;font-size:12px;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:5px;color:var(--edit);text-align:center}
+.wcap{font-size:10px;color:var(--dim);margin:0 0 8px}
+.back{font-family:var(--mono);font-size:12px;color:var(--edit);background:none;border:none;padding:6px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.r1{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tick{font-family:var(--mono);font-size:20px;font-weight:700}
+select.state{font-family:var(--mono);font-size:11px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:5px 6px;margin-left:auto}
+.pxwrap{display:flex;align-items:baseline;gap:7px;margin-top:9px;flex-wrap:wrap}
+.pxlbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+input.px{font-family:var(--mono);font-size:20px;font-weight:600;color:var(--edit);background:transparent;border:none;border-bottom:1px dashed var(--edit);width:110px}
+input.px:focus{outline:none;border-bottom-style:solid}
+.conf{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:5px}
+.cLIVE{background:rgba(70,192,138,.15);color:var(--go)} .cVER{background:rgba(70,192,138,.1);color:var(--go)}
+.cSEED{background:rgba(232,180,76,.12);color:var(--coil)} .cNONE{background:rgba(229,83,75,.14);color:var(--ext)}
+.thesis{font-size:12.5px;color:var(--muted);margin-top:8px}
+.thesis b{color:var(--ink)}
+.gline{font-family:var(--mono);font-size:11px;margin-top:10px;color:var(--muted)}
+.note{margin-top:8px;font-size:11px;color:var(--coil)}
+.runway{margin:13px 0 4px}
+.rw-track{position:relative;height:26px}
+.rw-line{position:absolute;top:12px;left:0;right:0;height:2px;background:var(--line)}
+.rw-win{position:absolute;top:9px;height:8px;background:rgba(70,192,138,.28);border:1px solid rgba(70,192,138,.5);border-radius:4px}
+.rw-win.closed{background:rgba(139,148,168,.15);border-color:var(--dim)}
+.rw-now{position:absolute;top:4px;width:2px;height:18px;background:var(--ink)}
+.rw-cat{position:absolute;top:7px;width:12px;height:12px;transform:rotate(45deg) translateX(-4px);background:var(--coil);border-radius:2px}
+.rw-lbls{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-top:3px}
+.rw-cap{font-size:11px;color:var(--muted);margin-top:5px}
+.rw-cap b{color:var(--ink)}
+.scn{display:flex;gap:8px;margin-top:12px}
+.scn label{flex:1;text-align:center;font-size:10px;color:var(--muted);text-transform:uppercase}
+.scn input{font-family:var(--mono);width:100%;text-align:center;font-size:14px;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:6px 2px;color:var(--edit)}
+.scncap{font-size:10px;color:var(--dim);margin-top:5px}
+table.setups{width:100%;border-collapse:collapse;margin-top:10px;font-family:var(--mono)}
+table.setups th{font-size:9px;color:var(--dim);text-transform:uppercase;text-align:right;padding:4px 3px;border-bottom:1px solid var(--line);font-weight:500}
+table.setups th:first-child{text-align:left}
+table.setups td{font-size:11.5px;text-align:right;padding:7px 3px;border-bottom:1px solid var(--panel2);vertical-align:top}
+table.setups td:first-child{text-align:left}
+.stype{display:block;font-size:9px;color:var(--dim)}
+.grade{font-weight:700;padding:2px 7px;border-radius:5px;font-size:11px}
+.gA{background:rgba(70,192,138,.18);color:var(--go)} .gB{background:rgba(232,180,76,.16);color:var(--coil)}
+.gC{background:rgba(139,148,168,.14);color:var(--muted)} .gS{background:rgba(229,83,75,.12);color:var(--ext)}
+.pos{color:var(--go)}.neg{color:var(--ext)}.flat{color:var(--muted)}
+details.model{margin-top:10px}
+details.model summary{font-family:var(--mono);font-size:11px;color:var(--dim);cursor:pointer;list-style:none}
+details.model summary::before{content:"▸ "} details.model[open] summary::before{content:"▾ "}
+.mrow{display:flex;gap:10px;margin-top:8px}
+.mrow label{flex:1;font-size:10px;color:var(--muted)}
+.mrow input{font-family:var(--mono);width:100%;font-size:13px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:5px;color:var(--edit)}
+.cal{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:8px}
+.cal .d{font-family:var(--mono);font-size:12px;width:58px;color:var(--ink)}
+.cal .t{font-family:var(--mono);font-weight:700;width:52px}
+.cal .l{flex:1;font-size:11.5px;color:var(--muted)}
+.cal .cf{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:4px}
+.cfC{background:rgba(70,192,138,.14);color:var(--go)} .cfE{background:rgba(232,180,76,.13);color:var(--coil)}
+.rule{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--coil);border-radius:11px;padding:12px;margin-bottom:10px;font-size:12.5px;color:var(--muted)}
+.rule b{color:var(--ink)}
+footer{margin:14px 0 0;font-size:10px;color:var(--dim);line-height:1.55}
+.ldbtn{font-family:var(--mono);font-size:11px;color:var(--edit);background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:6px 10px;margin-top:10px}
+</style>
+</head>
+<body>
+<header>
+  <h1>IRFTEK <span id="feedtag" class="feedtag seed">SEEDS</span><button class="rbtn" onclick="refreshTier()">⟳ refresh</button></h1>
+  <div class="sub" id="hdr">standalone · tap refresh to fetch live data</div>
+</header>
+<main id="view"></main>
+<nav>
+  <button id="nb" class="on" onclick="go('brief')">BRIEF</button>
+  <button id="nc" onclick="go('cal')">CALENDAR</button>
+  <button id="nr" onclick="go('rules')">RULES</button>
+</nav>
+
+<script src="terminal_data.js" onerror="void(0)"></script>
+<script>
+"use strict";
+/* ================= UNIVERSE + CALENDAR (embedded) ================= */
+const TIERS={
+ core:["NVTS","CRWV","MRVL","AVGO","AMD","MU","OKTA","NVDA","ARM","INTC","AAPL","MSFT","GOOGL","META","AMZN","DELL","QCOM","TSLA","NOW","NET","DDOG","CRWD","PANW"],
+ event:["SERV","ONDS","AAOI","POET","RR","CBRS","IONQ","TEM","QBTS","RGTI","RXRX","SOUN"],
+ component:["HIMX","VICR","POWI","MPWR","CRUS","AMKR","AEHR","FORM","TTMI","SNDK","SITM","CEVA","AIP","VUZI","SLAB","LSCC","AMBA"],
+ bench:["SAIL","MDB","PATH","LITE","IBM","TER","ISRG","CRM","ESTC","DT","AKAM","FSLY","KOPN","QUBT","SDGR"]};
+const ALL=[].concat(...Object.values(TIERS));
+const CAT={MRVL:["2026-08-20","Q2 print — first after NVIDIA $2B/NVLink Fusion","CONF"],
+NVDA:["2026-08-26","Q2 print — first with Rubin shipping","CONF"],
+AVGO:["2026-09-03","Q3 print — $16B AI-semi guide is the bar","CONF"],
+MU:["2026-09-21","FQ1 print — $50B guide; named on Spark board","EST"],
+NVTS:["2026-08-10","Earnings (Aug 3–17) + Rubin 800V racks Q3","EST"],
+AMD:["2026-08-04","Q2 print + MI450 1GW deployment begins","EST"],
+CRWV:["2026-08-12","Q2 print + Rubin deployment PRs","EST"],
+OKTA:["2026-08-26","Q2 print + agent-identity cycle (Layer D)","EST"],
+AAPL:["2026-09-09","iPhone/M5 event — Spark response stage","EST"],
+META:["2026-09-17","Connect — glasses/ambient stage","EST"],
+ARM:["2026-08-05","Q1 print — Spark design-wins narrative","EST"],
+INTC:["2026-07-23","Q2 print — foundry + Arm-PC two-sided","EST"],
+QCOM:["2026-07-30","Q3 print — Spark loser vs glasses winner","EST"],
+MSFT:["2026-07-28","Capex + Copilot/agent print","EST"],
+GOOGL:["2026-07-29","Capex + Gemini/agent print","EST"],
+AMZN:["2026-07-30","Capex print","EST"],
+TSLA:["2026-07-23","Q2 print (Optimus line)","EST"],
+DELL:["2026-08-27","Q2 print — Spark OEM + AI server","EST"],
+NOW:["2026-07-23","Q2 print — agentic workflow","EST"],
+NET:["2026-07-31","Q2 print — agent platform","EST"],
+DDOG:["2026-08-06","Q2 print — AI observability","EST"],
+CRWD:["2026-08-27","Q2 print — agentic security","EST"],
+PANW:["2026-08-19","FQ4 print — CyberArk integration","EST"],
+SERV:["2026-08-06","Q2 print + fleet PRs","EST"],
+ONDS:["2026-08-11","Q2 print + defense drone flow","EST"],
+AAOI:["2026-08-06","Q2 print — optical = Rubin pace","EST"],
+RR:["2026-08-13","Q2 print — squeeze mechanics","EST"],
+CBRS:["2026-08-24","Hot Chips stage (no print in window)","EST"],
+IONQ:["2026-08-06","Q2 print + networking milestones","EST"],
+TEM:["2026-08-04","Q2 print","EST"],
+QBTS:[null,"Undated CHIPS/contract headlines","EST"],
+RGTI:[null,"Undated milestones","EST"],
+RXRX:[null,"Binary readout — only if dated","EST"],
+POET:[null,"Undated design-win PRs","EST"],
+SOUN:["2026-08-06","Q2 print — on-device voice agents","EST"],
+HIMX:["2026-08-06","Q2 print — glasses display engine","EST"],
+VICR:["2026-07-21","Q2 print — VPD 2.0, record Q1","EST"],
+POWI:["2026-08-04","Q2 print — 1250/1700V GaN, chargers","EST"],
+MPWR:["2026-07-31","Q2 print — NVIDIA VRM incumbent","EST"],
+CRUS:["2026-07-29","FQ1 print — Apple + laptop expansion","EST"],
+AMKR:["2026-07-27","Q2 print — Apple AZ packaging","EST"],
+FORM:["2026-07-29","Q2 print — HBM probe cards","EST"],
+TTMI:["2026-07-29","Q2 print — AI PCBs","EST"],
+SNDK:["2026-08-05","Print — client NAND, local AI","EST"],
+SITM:["2026-08-05","Print — AI timing","EST"],
+CEVA:["2026-08-10","Print — edge-AI IP royalty","EST"],
+AIP:["2026-08-05","Print — NoC IP (thin chains)","EST"],
+AEHR:[null,"Undated customer-order PRs","EST"],
+VUZI:[null,"Undated OEM wins","EST"]};
+const THESIS={MRVL:"<b>The NVTS-rhyme fired:</b> NVIDIA $2B + Jensen's 'trillion-dollar' quote; −12% reset into a CONFIRMED print.",
+NVTS:"Ran to <b>$34</b>, washed out. 800V ships inside Rubin racks this quarter — second validation wave.",
+CRWV:"Your #1 winner, near 52-wk lows on Meta scare. Rubin racks land here — deployment PRs are the events.",
+AVGO:"−22% since June despite +143% AI rev — the bar reset. Sep 3 is pass/fail on the $16B guide.",
+AMD:"MI450 1GW starts this half — largely priced at 177× off an ATH. Spreads only.",
+MU:"<b>+309% YTD</b>, named on the Spark board (8× LPDDR5X). Best fundamentals, worst chart — the discipline test.",
+OKTA:"Post-CyberArk ($25B PANW close) the Layer-D pure-play. M&A-target optionality.",
+NVDA:"Anchor, not a position (R1): Aug 26 moves everything downstream.",
+ARM:"The Spark derivative: NVIDIA's first Arm PC chip + Surface = new royalty TAM.",
+INTC:"Two-sided: foundry/gov halo vs the Arm-PC knife. Spread only.",
+AAPL:"Sep 9 is a <b>response stage</b> — Spark attacks the Mac's local-LLM monopoly; M5 must answer.",
+MSFT:"Owns substrate→identity→agent; OpenShell/MXC are Layer-D poured as runtime.",
+GOOGL:"Gemini + capex guide = the sector detonator print.",META:"Glasses momentum vs engagement-ad anti-thesis. Connect is the stage.",
+AMZN:"Capex print; Bedrock agents + robotics.",DELL:"Spark OEM + AI-server attach; ran on acquisition rumor.",
+QCOM:"Lost $10B on Spark day; keeps the glasses silicon. Two-sided, spreads only.",
+TSLA:"Optimus commentary is the only mesh line. Spread only.",NOW:"Agentic workflow orders; seat-pricing tension caps it.",
+NET:"Closest public mesh embodiment — Durable Objects ARE dissolving sessions.",DDOG:"The kernel's audit field: AI observability.",
+CRWD:"Agentic SOC.",PANW:"Digesting CyberArk + Chronosphere — the Layer-D consolidator.",
+SERV:"75% extrinsic, rev +578% with stock down — spring-loaded story.",ONDS:"Defense-drone flow clusters into prints.",
+AAOI:"Optical is the visible proof of Rubin cluster pace.",POET:"Optical interposer; undated = no trade.",
+RR:"Low-float squeeze mechanics; half-lotto.",CBRS:"Inference pure-play; Hot Chips is its stage.",
+IONQ:"Quantum networking = quantum-secure delegation. Decade-out.",TEM:"AI-health momentum.",
+QBTS:"Annealing = the mesh's optimization solver. Undated.",RGTI:"Milestone-binary.",RXRX:"Binary readout — dated or nothing.",
+SOUN:"On-device voice agents (RR partner).",
+HIMX:"<b>Best structural rhyme:</b> glasses display engine (350k nits) + WiseEye local AI — 'data never leaves the glasses' — on a sleepy cyclical base.",
+VICR:"The last 1.5mm of AI power: VPD 2.0, 40× multiplication, record Q1. Architecture war with NVTS's topology.",
+POWI:"Only 1250/1700V single-HEMT GaN in volume — the 800V transition + every slim-laptop charger.",
+MPWR:"NVIDIA's VRM incumbent → Spark laptop power content across 30+ designs.",
+CRUS:"Apple codec/power near-monopoly + stated Windows-laptop expansion — the dual-ecosystem option.",
+AMKR:"Apple's Arizona packaging anchor; your prior winner.",AEHR:"Burn-in lotto — watch until a dated order PR exists.",
+FORM:"HBM/logic probe cards — test intensity rises with every silicon wave.",TTMI:"High-end AI PCBs.",
+SNDK:"Client NAND for owning your data locally; no-chase rules.",
+SITM:"Precision timing for AI compute.",CEVA:"Edge-AI IP toll road; thin chains → shares.",
+AIP:"NoC interconnect IP; shares only.",VUZI:"Waveguides in the HIMX reference design; HIMX expresses it better."};
+const SEEDS={MRVL:{px:274},NVTS:{px:14.11},CRWV:{px:85.7},AVGO:{px:385},AMD:{px:531.5},MU:{px:995},OKTA:{px:75.2},HIMX:{px:10.5}};
+const IV_SEED={NVTS:95,CRWV:85,MU:75,MRVL:55,AMD:48,OKTA:45,AVGO:42,SERV:110,RR:120,ONDS:95,AAOI:80,POET:100,CBRS:75,IONQ:100,TEM:85,QBTS:110,RGTI:115,RXRX:110,SOUN:95,HIMX:65,VICR:60,POWI:45,MPWR:45,CRUS:45,AMKR:55,AEHR:110,FORM:55,TTMI:55,SNDK:75,SITM:60,CEVA:70,AIP:80,VUZI:130,SLAB:50,LSCC:55,AMBA:60};
+const tierOf=t=>Object.keys(TIERS).find(k=>TIERS[k].includes(t));
+const ivOf=t=>IV_SEED[t]??(tierOf(t)==="core"?40:70);
+const crushOf=t=>{const c=CAT[t];return (!c||!c[0]||/PR/.test(c[1]))?0.9:0.8};
+/* ================= MATH ================= */
+function erf(x){var s=x<0?-1:1;x=Math.abs(x);var a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;var t=1/(1+p*x);var y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);return s*y}
+function ncdf(x){return 0.5*(1+erf(x/Math.SQRT2))}
+function bsC(S,K,T,sig,r){if(T<=0)return Math.max(0,S-K);if(sig<=0)return Math.max(0,S-K*Math.exp(-r*T));var d1=(Math.log(S/K)+(r+sig*sig/2)*T)/(sig*Math.sqrt(T)),d2=d1-sig*Math.sqrt(T);return S*ncdf(d1)-K*Math.exp(-r*T)*ncdf(d2)}
+function bsP(S,K,T,sig,r){return bsC(S,K,T,sig,r)-S+K*Math.exp(-r*T)}
+const price=(cp,S,K,T,sig,r)=>cp==="C"?bsC(S,K,T,sig,r):bsP(S,K,T,sig,r);
+const D=s=>new Date(s+"T16:00:00");const TODAY=new Date();const DAY=86400000;
+const yrs=(a,b)=>Math.max(0,(b-a)/DAY)/365;
+const EXPIRIES=["2026-08-21","2026-09-18","2026-10-16","2026-11-20","2027-01-15"];
+const fmt$=v=>v>=100?v.toFixed(0):v>=10?v.toFixed(1):v.toFixed(2);
+const stepFor=p=>p<20?0.5:p<60?1:p<150?2.5:p<400?5:p<800?10:25;
+const rnd=p=>{const s=stepFor(p);return Math.round(p/s)*s};
+const dshort=s=>D(s).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+let W={bear:.30,base:.45,bull:.25};
+/* ================= SCANNER (JS port of the battery-proven v2, parity-locked) ================= */
+function _ema(xs,n){const a=2/(n+1);let prev=null;return xs.map(x=>prev=prev===null?x:a*x+(1-a)*prev)}
+function _sma(xs,n){const out=new Array(xs.length).fill(null);let s=0;for(let i=0;i<xs.length;i++){s+=xs[i];if(i>=n)s-=xs[i-n];if(i>=n-1)out[i]=s/n}return out}
+function _rstd(xs,n){const out=new Array(xs.length).fill(null);for(let i=n-1;i<xs.length;i++){const w=xs.slice(i-n+1,i+1);const m=w.reduce((a,b)=>a+b,0)/n;out[i]=Math.sqrt(w.reduce((a,b)=>a+(b-m)*(b-m),0)/n)}return out}
+function _atr(h,l,c,n){const tr=[h[0]-l[0]];for(let i=1;i<c.length;i++)tr.push(Math.max(h[i]-l[i],Math.abs(h[i]-c[i-1]),Math.abs(l[i]-c[i-1])));return _sma(tr,n)}
+function _rsi(c,n=14){const d=[0];for(let i=1;i<c.length;i++)d.push(c[i]-c[i-1]);
+ const mu=_sma(d.map(x=>Math.max(x,0)),n),md=_sma(d.map(x=>Math.max(-x,0)),n);
+ return mu.map((u,i)=>{const v=md[i];return(u===null||v===null||v===0)?50:100-100/(1+u/v)})}
+function _obv(c,v){const out=[0];for(let i=1;i<c.length;i++){const s=c[i]>c[i-1]?1:(c[i]<c[i-1]?-1:0);out.push(out[out.length-1]+s*v[i])}return out}
+function _slope(xs,n){const y=xs.filter(x=>x!==null).slice(-n);if(y.length<n)return 0;
+ const m=y.length,sx=m*(m-1)/2,sxx=(m-1)*m*(2*m-1)/6;let sy=0,sxy=0;
+ for(let i=0;i<m;i++){sy+=y[i];sxy+=i*y[i]}
+ const den=m*sxx-sx*sx;if(!den)return 0;const b=(m*sxy-sx*sy)/den,base=sy/m;return base?b/base:0}
+function _pctRank(sl,val){const s=sl.filter(x=>x!==null);if(s.length<5||val===null)return .5;return s.filter(x=>x<val).length/s.length}
+function _rmin(xs,n){const out=new Array(xs.length).fill(null);for(let i=n-1;i<xs.length;i++)out[i]=Math.min(...xs.slice(i-n+1,i+1));return out}
+function scan(df,hiWin=50){
+ if(!df)return null;const c=df.Close,h=df.High,l=df.Low,v=df.Volume;
+ if(c.length<60)return null;
+ const clamp=(x,lo=0,hi=1)=>Math.max(lo,Math.min(hi,x));
+ const mid=_sma(c,20),sd=_rstd(c,20);
+ const ub=mid.map((m,i)=>m===null?null:m+2*sd[i]),lb=mid.map((m,i)=>m===null?null:m-2*sd[i]);
+ const kmid=_ema(c,20),a20=_atr(h,l,c,20);
+ const kub=kmid.map((m,i)=>a20[i]===null?null:m+1.5*a20[i]),klb=kmid.map((m,i)=>a20[i]===null?null:m-1.5*a20[i]);
+ const bbw=ub.map((u,i)=>(u===null||!mid[i])?null:(u-lb[i])/mid[i]);
+ const r=_rsi(c,14),e20=_ema(c,20),e50=_ema(c,50),obv=_obv(c,v);
+ const L=c.length-1,px=c[L];
+ const bbwRank=_pctRank(bbw.slice(-126),bbw[L]);
+ const squeezeOn=lb[L]!==null&&klb[L]!==null&&lb[L]>klb[L]&&ub[L]<kub[L];
+ const squeeze=clamp((1-bbwRank)*0.8+(squeezeOn?0.2:0));
+ const v5=_sma(v,5)[L],v20=_sma(v,20)[L];
+ const dryup=v20?clamp((v20-v5)/v20+0.5):0.5;
+ const accum=clamp(0.5+8*_slope(obv,20)),volume=clamp(0.5*dryup+0.5*accum);
+ const hi=Math.max(...c.slice(-hiWin)),dist=hi?(hi-px)/hi:1;
+ const breaking=px>=hi*0.999;
+ const proximity=breaking?1:clamp(1-dist/0.12);
+ const rs=clamp(0.5+6*_slope(c,40));
+ const uptrend=px>e50[L]&&e20[L]>e50[L];
+ const hl=_slope(_rmin(l,5),30)>0;
+ const trend=clamp((uptrend?0.6:0)+(hl?0.4:0));
+ const rv=r[L],rrise=r[L]-r[L-3];
+ let momentum;
+ if(rv>=80)momentum=0.2;else if(rv>=50&&rv<72)momentum=clamp(0.6+0.05*rrise);
+ else if(rv<40)momentum=0.2;else momentum=0.5;
+ const extended=rv>=80||px>1.30*e50[L];
+ const Wp={squeeze:.25,volume:.15,proximity:.20,rs:.20,trend:.10,momentum:.10};
+ const parts={squeeze,volume,proximity,rs,trend,momentum};
+ const readiness=Math.round(10*Object.keys(Wp).reduce((a,k)=>a+100*Wp[k]*parts[k],0))/10;
+ const volExpand=!!v20&&v[L]>1.5*v20, overTrend=px>1.30*e50[L];
+ let note="";
+ if(breaking&&uptrend&&!volExpand)note="breaking level WITHOUT volume — suspect; wait for confirmation";
+ let prox1,sq1;
+ if(c.length>=hiWin+2){
+  const px1=c[L-1],hi1=Math.max(...c.slice(-hiWin-1,-1));
+  prox1=px1>=hi1*0.999?1:clamp(1-((hi1-px1)/hi1)/0.12);
+  sq1=clamp((1-_pctRank(bbw.slice(-127,-1),bbw[L-1]))*0.8+(squeezeOn?0.2:0));
+ }else{prox1=proximity;sq1=squeeze}
+ let state;
+ if(breaking&&volExpand&&uptrend){
+  if(overTrend){state="EXTENDED (don't chase)";note="new high while >30% over 50d EMA — late; distribution zone"}
+  else state="BREAKOUT (trigger)";
+ }else if(extended)state="EXTENDED (don't chase)";
+ else{
+  const hasRamp=c.length<90?true:(c[c.length-40]/c[c.length-90]-1)>=0.08;
+  const tight=parts.squeeze>=0.50&&parts.proximity>=0.60&&sq1>=0.45&&prox1>=0.55&&hasRamp;
+  if(readiness>=68&&uptrend&&tight)state="COILED — ready";
+  else if(uptrend&&readiness>=50)state="BASING (watch)";
+  else state="NO SETUP";
+ }
+ return {state,readiness,note,rsi:Math.round(rv*10)/10,
+         parts:Object.fromEntries(Object.entries(parts).map(([k,x])=>[k,Math.round(x*100)/100]))};
+}
+/* ================= DATA LAYER (in-app fetch, relay chain) ================= */
+const PROXIES=[
+ u=>"https://corsproxy.io/?url="+encodeURIComponent(u),
+ u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(u),
+ u=>"https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(u)];
+let GOODP=0;                                   // sticky: remember which relay worked last
+async function fetchOnce(url,timeout){
+ const ctl=new AbortController();const h=setTimeout(()=>ctl.abort(),timeout);
+ try{const r=await fetch(url,{signal:ctl.signal});
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  return await r.json();
+ }finally{clearTimeout(h)}
+}
+async function getJSON(url,{tryDirect=false,timeout=6000}={}){
+ const order=[GOODP,(GOODP+1)%PROXIES.length,(GOODP+2)%PROXIES.length];
+ const attempts=(tryDirect?[null]:[]).concat(order);
+ let err;
+ for(const idx of attempts){
+  try{
+   const j=await fetchOnce(idx===null?url:PROXIES[idx](url),timeout);
+   if(idx!==null)GOODP=idx;
+   return j;
+  }catch(e){err=e}
+ }
+ throw err||new Error("all relays failed");
+}
+function _sparkParse(j){
+ const res=(j&&j.spark&&j.spark.result)||(j&&j.result)||[];
+ const out={};
+ for(const r of res){
+  const resp=r&&r.response&&r.response[0];
+  const px=resp&&resp.meta&&resp.meta.regularMarketPrice;
+  if(r&&r.symbol&&px>0)out[r.symbol]=px;
+ }
+ return out;
+}
+async function loadPrices(names){
+ for(let i=0;i<names.length;i+=20){
+  const chunk=names.slice(i,i+20);
+  try{
+   const j=await getJSON("https://query1.finance.yahoo.com/v8/finance/spark?symbols="+chunk.join(",")+"&range=1d&interval=1d");
+   const px=_sparkParse(j);
+   for(const t of chunk)if(px[t]){DB[t].px=px[t];DB[t].conf="LIVE"}
+  }catch(e){}
+ }
+}
+function _yhParse(j){
+ const res=j.chart.result[0],q=res.indicators.quote[0];
+ const df={Open:[],High:[],Low:[],Close:[],Volume:[]};
+ for(let i=0;i<q.close.length;i++){
+  const row=[q.open[i],q.high[i],q.low[i],q.close[i],q.volume[i]];
+  if(row.some(x=>x==null))continue;
+  df.Open.push(row[0]);df.High.push(row[1]);df.Low.push(row[2]);df.Close.push(row[3]);df.Volume.push(row[4]);
+ }
+ return {df,px:res.meta&&res.meta.regularMarketPrice||df.Close[df.Close.length-1]||null};
+}
+function _cboeParse(j){
+ const rows=(j.data&&j.data.options)||[];const out=[];
+ for(const o of rows){
+  const m=/([0-9]{6})([CP])([0-9]{8})$/.exec(o.option||"");
+  if(!m)continue;
+  const exp="20"+m[1].slice(0,2)+"-"+m[1].slice(2,4)+"-"+m[1].slice(4,6);
+  out.push({exp,cp:m[2],K:parseInt(m[3],10)/1000,bid:o.bid,ask:o.ask,
+            last:o.last_trade_price,iv:(o.iv&&o.iv>0)?Math.round(o.iv*10000)/100:null});
+ }
+ return out;
+}
+async function loadName(t){
+ const n=DB[t];
+ try{
+  const j=await getJSON(`https://query1.finance.yahoo.com/v8/finance/chart/${t}?range=1y&interval=1d`);
+  const {df,px}=_yhParse(j);
+  if(px>0){n.px=px;n.conf="LIVE"}
+  if(df.Close.length>=60){
+   n.hist=df;const st=scan(df);
+   if(st){n.state=mapKey(st.state);n.rdy=st.readiness;n.snote=st.note}
+   if(!n.touched)autoScn(t);
+  }
+  n.err="";return true;
+ }catch(e){n.err="fetch failed";return false}
+}
+async function loadChain(t){
+ const n=DB[t];n.chainState="loading";paint();
+ if(API){
+  try{await apiChunk([t]);if(n.chainState!=="live")n.chainState="none";paint();return}catch(e){}
+ }
+ try{
+  const j=await getJSON(`https://cdn.cboe.com/api/global/delayed_quotes/options/${t}.json`,{tryDirect:true});
+  const ch=_cboeParse(j);
+  if(ch.length){n.chain=ch;n.chainState="live";paint();return}
+ }catch(e){}
+ n.chainState="none";paint();
+}
+function autoScn(t){
+ const n=DB[t],c=CAT[t];if(!n.hist)return;
+ const {High:h,Low:l,Close:cl}=n.hist,L=cl.length-1;
+ let s=0;for(let i=L-19;i<=L;i++)s+=(h[i]-l[i])/cl[i];
+ const atrPct=s/20*100;
+ const lead=c&&c[0]?Math.max(5,Math.min(30,(D(c[0])-TODAY)/DAY)):20;
+ const mv=Math.max(5,Math.min(35,atrPct*Math.sqrt(lead)*1.6));
+ n.scn={bear:-Math.round(0.8*mv),base:Math.round(0.3*mv),bull:Math.round(mv)};
+ n.scnAuto=true;
+}
+const API=(location.protocol==="http:"||location.protocol==="https:")?"/api/feed":null;
+async function apiChunk(chunk){
+ const r=await fetchOnce(API+"?names="+chunk.join(","),25000);
+ const names=r.names||{};
+ for(const t of chunk){
+  const d=names[t];if(!d)continue;
+  const n=DB[t];
+  if(d.px>0){n.px=d.px;n.conf="LIVE"}
+  if(d.state){n.state=mapKey(d.state)||n.state;n.rdy=d.rdy;n.snote=d.note||""}
+  if(d.chain&&d.chain.length){n.chain=d.chain;n.chainState="live"}
+  if(d.atrPct&&!n.touched){
+   const c=CAT[t];const lead=c&&c[0]?Math.max(5,Math.min(30,(D(c[0])-TODAY)/DAY)):20;
+   const mv=Math.max(5,Math.min(35,d.atrPct*Math.sqrt(lead)*1.6));
+   n.scn={bear:-Math.round(0.8*mv),base:Math.round(0.3*mv),bull:Math.round(mv)};n.scnAuto=true;
+  }
+  n.hist=n.hist||true;   // mark satisfied for session cache
+ }
+}
+let LOADING=false;
+async function refreshTier(){
+ if(LOADING)return;LOADING=true;
+ const names=(TIER==="all"?ALL:TIERS[TIER]);
+ if(API){
+  let done=0,dirty=false;const chunks=[];
+  for(let i=0;i<names.length;i+=6)chunks.push(names.slice(i,i+6));
+  setHdr(`api 0/${names.length}…`);
+  const tick=setInterval(()=>{if(dirty){dirty=false;paint()}},400);
+  let ci=0;
+  async function w(){while(ci<chunks.length){const ch=chunks[ci++];
+   try{await apiChunk(ch)}catch(e){}
+   done+=ch.length;dirty=true;setHdr(`api ${done}/${names.length}…`)}}
+  await Promise.all(Array.from({length:Math.min(3,chunks.length)},w));
+  clearInterval(tick);LOADING=false;
+  const live=ALL.filter(t=>DB[t].conf==="LIVE").length;
+  setHdr(`live ${live} · same-origin api · ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}`);
+  const tg=document.getElementById("feedtag");
+  if(live){tg.textContent="LIVE";tg.className="feedtag live"}
+  paint();return;
+ }
+ setHdr("prices (batch)…");
+ await loadPrices(names);paint();
+ let todo=names.filter(t=>!DB[t].hist);          // session cache: only fetch what's missing
+ if(!todo.length)todo=names.slice();             // everything cached -> deep refresh
+ let done=0,dirty=false;const total=todo.length;
+ setHdr(`history+scan 0/${total}…`);
+ const tick=setInterval(()=>{if(dirty){dirty=false;paint()}},400);
+ let idx=0;
+ async function worker(){
+  while(idx<todo.length){
+   const t=todo[idx++];
+   await loadName(t);
+   done++;dirty=true;setHdr(`history+scan ${done}/${total}…`);
+  }
+ }
+ await Promise.all(Array.from({length:Math.min(8,todo.length)},worker));
+ clearInterval(tick);LOADING=false;
+ const live=ALL.filter(t=>DB[t].conf==="LIVE").length;
+ setHdr(`live ${live} names · ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} · delayed public data`);
+ const tg=document.getElementById("feedtag");
+ if(live){tg.textContent="LIVE";tg.className="feedtag live"}
+ paint();
+}
+function setHdr(s){document.getElementById("hdr").textContent=s}
+/* ================= STATE ================= */
+const DB={};
+function mapKey(s){if(!s)return null;
+ if(s.startsWith("COILED")||s.startsWith("BREAKOUT"))return"COILED";
+ if(s.startsWith("BASING"))return"BASING";
+ if(s.startsWith("EXTENDED"))return"EXTENDED";
+ if(s==="NO SETUP")return"NOSETUP";return null}
+function scnDefault(t){const k=tierOf(t);
+ const base=({MRVL:[-12,10,22],NVTS:[-18,15,35],CRWV:[-15,12,28],AVGO:[-10,7,15],AMD:[-10,6,15],MU:[-15,5,12],OKTA:[-10,7,16]})[t];
+ if(base)return base;
+ return k==="event"?[-15,10,25]:k==="component"?[-12,8,20]:[-8,5,12]}
+ALL.forEach(t=>{
+ const q=window.FEED&&FEED.quotes&&FEED.quotes[t];
+ const st=window.FEED&&FEED.states&&mapKey(FEED.states[t]);
+ const sc=scnDefault(t);
+ DB[t]={px:q&&q.px>0?q.px:(SEEDS[t]?SEEDS[t].px:null),
+  conf:q&&q.px>0?"LIVE":(SEEDS[t]?"SEED":"NONE"),
+  state:st||"VERIFY",rdy:null,snote:"",hist:null,chain:(window.FEED&&FEED.chains&&FEED.chains[t])||null,
+  chainState:(window.FEED&&FEED.chains&&FEED.chains[t])?"live":"idle",
+  iv:ivOf(t),crush:crushOf(t),scn:{bear:sc[0],base:sc[1],bull:sc[2]},scnAuto:false,touched:false,
+  expSel:"ALL",err:""};});
+/* ================= GATE ================= */
+const TW=45;
+function gate(t){
+ const n=DB[t],c=CAT[t];
+ if(!c||!c[0])return["NO-DATE","undated story = no trade",null];
+ const days=Math.round((D(c[0])-TODAY)/DAY);
+ const info=`${c[1]} — ${dshort(c[0])} (${days>=0?"+":""}${days}d, ${c[2]})${c[2]==="EST"&&days>=0&&days<=10?" · confirm T−7":""}`;
+ if(n.px==null)return["NEEDS-PX",info,days];
+ const thesis=days>=0&&days<=TW,soon=days>TW&&days<=TW+14,coiled=n.state==="COILED";
+ if(thesis&&coiled)return["GO",info,days];
+ if(soon&&coiled)return["WINDOW-SOON",info,days];
+ if(thesis&&n.state==="BASING")return["WATCH+",info,days];
+ if(thesis)return["THESIS-ONLY",info,days];
+ if(coiled)return["PRICE-ONLY",info,days];
+ return["STAND-DOWN",info,days];
+}
+const GORDER={"GO":0,"WINDOW-SOON":1,"WATCH+":2,"PRICE-ONLY":3,"THESIS-ONLY":4,"NEEDS-PX":5,"STAND-DOWN":6,"NO-DATE":7};
+const GCLS={"GO":"gGO","WINDOW-SOON":"gWS","WATCH+":"gWP","PRICE-ONLY":"gPO","THESIS-ONLY":"gTO","NEEDS-PX":"gNP","STAND-DOWN":"gSD","NO-DATE":"gND"};
+/* ================= SETUP ENGINE ================= */
+const ALIGN_C={COILED:1,BASING:.85,VERIFY:.5,EXTENDED:.15,NOSETUP:.35};
+const ALIGN_P={EXTENDED:.85,VERIFY:.5,BASING:.35,COILED:.15,NOSETUP:.4};
+function chainRow(t,exp,K,cp){
+ const ch=DB[t].chain;if(!ch)return null;
+ const eps=stepFor(K)/2;
+ return ch.find(r=>r.exp===exp&&r.cp===cp&&Math.abs(r.K-K)<=eps)||null}
+function setupsFor(t){
+ const n=DB[t],c=CAT[t];
+ if(!c||!c[0]||!n.px)return[];
+ const S=n.px,r=.04,catT=D(c[0]),lead=Math.max(1,(catT-TODAY)/DAY);
+ const out=[];
+ const premOf=(cp,exp,eT,K)=>{
+  const row=chainRow(t,exp,K,cp);
+  const iv=(row&&row.iv>1?row.iv/100:n.iv/100);
+  let p=null,src="model";
+  if(row){const b=row.bid,a=row.ask,l=row.last;
+   if(b>0&&a>0)p=(b+a)/2;else if(l>0)p=l;if(p)src="chain"}
+  if(!p)p=price(cp,S,K,yrs(TODAY,eT),iv,r);
+  return{p,iv,src}};
+ const breakeven=(valFn,prem)=>{
+  let lo=-60,hi=80;const f=m=>valFn(m)-prem;
+  if(f(lo)*f(hi)>0)return f(0)>=0?0:null;
+  for(let k=0;k<40;k++){const mid=(lo+hi)/2;(f(mid)>0)===(f(hi)>0)?hi=mid:lo=mid}
+  return(lo+hi)/2/100};
+ EXPIRIES.forEach(exp=>{
+  const eT=D(exp);if(eT<=catT)return;
+  if(n.expSel!=="ALL"&&exp!==n.expSel)return;
+  const dte=(eT-TODAY)/DAY,r3ok=dte>=3*lead,Trem=yrs(catT,eT);
+  const legVal=(cp,K,iv,m)=>price(cp,S*(1+m/100),K,Trem,iv*n.crush,r);
+  const evaluate=(label,typ,cp,prem,src,valFn)=>{
+   if(prem<0.02)return;
+   const vb=valFn(n.scn.bear),vm=valFn(n.scn.base),vu=valFn(n.scn.bull);
+   const ev=W.bear*vb+W.base*vm+W.bull*vu,ret=ev/prem-1;
+   const pwin=(vb>prem?W.bear:0)+(vm>prem?W.base:0)+(vu>prem?W.bull:0);
+   const flat=valFn(0)/prem-1,be=breakeven(valFn,prem);
+   const align=(cp==="C"?ALIGN_C:ALIGN_P)[n.state];
+   const conf=.35*(c[2]==="CONF"?1:.55)+.25*align+.20*(r3ok?1:.35)+.20*Math.max(0,Math.min(1,pwin));
+   let grade=ret<=0?"SKIP":conf>=.66?"A":conf>=.5?"B":conf>=.35?"C":"SKIP";
+   if(typ==="LOTTO"&&grade!=="SKIP")grade="C";
+   out.push({label,typ,exp,prem,src,ret,pwin:Math.max(0,Math.min(1,pwin)),flat,be,grade,r3ok,
+             score:(ret>0?ret:0)*(.5+.5*conf)})};
+  const Ks={C:[rnd(S),rnd(S*1.10),rnd(S*1.25)],P:[rnd(S),rnd(S*0.90),rnd(S*0.80)]};
+  ["C","P"].forEach(cp=>Ks[cp].forEach(K=>{
+   if(K<=0)return;
+   const{p,iv,src}=premOf(cp,exp,eT,K);
+   const lotto=cp==="C"&&K>=S*1.2&&!r3ok;
+   const typ=cp==="P"?(n.state==="EXTENDED"?"CRUSH-FADE PUT":"HEDGE PUT")
+     :lotto?"LOTTO":(eT>=D("2026-11-01")&&(n.state==="NOSETUP"||n.state==="VERIFY"))?"REPAIR CALL":"PRE-CAT CALL";
+   evaluate(`${K}${cp}`,typ,cp,p,src,m=>legVal(cp,K,iv,m))}));
+  const CS={K1:rnd(S*1.02),K2:rnd(S*1.15)},PS={K1:rnd(S*0.98),K2:rnd(S*0.85)};
+  if(CS.K2>CS.K1){const a=premOf("C",exp,eT,CS.K1),b=premOf("C",exp,eT,CS.K2),net=a.p-b.p;
+   if(net>0.02)evaluate(`${CS.K1}/${CS.K2}C`,"CALL SPREAD","C",net,a.src==="chain"&&b.src==="chain"?"chain":"model",
+    m=>legVal("C",CS.K1,a.iv,m)-legVal("C",CS.K2,b.iv,m))}
+  if(PS.K1>PS.K2){const a=premOf("P",exp,eT,PS.K1),b=premOf("P",exp,eT,PS.K2),net=a.p-b.p;
+   if(net>0.02)evaluate(`${PS.K1}/${PS.K2}P`,"PUT SPREAD","P",net,a.src==="chain"&&b.src==="chain"?"chain":"model",
+    m=>legVal("P",PS.K1,a.iv,m)-legVal("P",PS.K2,b.iv,m))}});
+ out.sort((a,b)=>b.score-a.score||b.ret-a.ret);
+ const good=out.filter(x=>x.grade!=="SKIP");
+ const skips=out.filter(x=>x.grade==="SKIP").sort((a,b)=>b.ret-a.ret);
+ const rows=good.slice(0,4);
+ while(rows.length<4&&skips.length)rows.push(skips.shift());
+ if(good.length>=4&&skips.length)rows.push(skips[0]);
+ return rows}
+function bestSetup(t){
+ const g=gate(t)[0];
+ if(!["GO","WINDOW-SOON","WATCH+","PRICE-ONLY"].includes(g))return null;
+ const s=setupsFor(t).find(x=>x.grade!=="SKIP");
+ return s?{grade:s.grade,ret:s.ret}:null}
+/* ================= VIEWS ================= */
+let VIEW="brief",TIER="core",CUR=null;
+function go(v,t){VIEW=v;if(t)CUR=t;paint()}
+function stChip(n){const s=n.state;const m={COILED:["sC","COILED"],BASING:["sB","BASING"],EXTENDED:["sE","EXTEND"],NOSETUP:["sN","NO SET"],VERIFY:["sV","VERIFY"]}[s]||["sV",s];
+ return`<span class="st ${m[0]}">${m[1]}${n.rdy!==null&&s!=="VERIFY"?"·"+Math.round(n.rdy):""}</span>`}
+function vBrief(){
+ const names=TIER==="all"?ALL:TIERS[TIER];
+ const rows=names.map(t=>({t,g:gate(t)})).sort((a,b)=>(GORDER[a.g[0]]-GORDER[b.g[0]])||((a.g[2]??999)-(b.g[2]??999)));
+ const chips=["core","event","component","bench","all"].map(k=>`<span class="chip ${TIER===k?'on':''}" onclick="TIER='${k}';paint()">${k}</span>`).join("");
+ const wrow=`<div class="wrow">
+  <label>bear w%<input inputmode="numeric" value="${Math.round(W.bear*100)}" onchange="setW('bear',this.value)"></label>
+  <label>base w%<input inputmode="numeric" value="${Math.round(W.base*100)}" onchange="setW('base',this.value)"></label>
+  <label>bull w%<input inputmode="numeric" value="${Math.round(W.bull*100)}" onchange="setW('bull',this.value)"></label></div>
+  <div class="wcap">Your probabilities. Every EV, P(win), grade — including the BEST column → — recomputes when you change them.</div>`;
+ return `<div class="chips">${chips}</div>${wrow}`+rows.map(({t,g})=>{
+  const n=DB[t];const px=n.px?fmt$(n.px):"—";
+  const days=g[2]==null?"":(g[2]>=0?`+${g[2]}d`:`${g[2]}d`);
+  const b=bestSetup(t);
+  const bcell=b?`<span class="grade g${b.grade}" style="font-size:9px;padding:1px 5px">${b.grade}</span> <span class="${b.ret>0?'pos':'neg'}">${(b.ret*100).toFixed(0)}%</span>`:`<span class="flat">—</span>`;
+  return `<div class="row" onclick="go('name','${t}')">
+   <span class="tk">${t}</span><span class="px">${px}</span>${stChip(n)}
+   <span class="gt ${GCLS[g[0]]}">${g[0]}</span><span class="bs">${bcell}</span><span class="cd">${days}</span></div>`}).join("")+
+  `<footer>Tap ⟳ refresh (top) to fetch this tier: prices + history + scanner states, all in-app via public relays (delayed data). BEST = top graded setup's EV under your weights. Tap a row for the runway + full setups. Not investment advice.</footer>`}
+function runway(t){
+ const c=CAT[t];if(!c||!c[0])return"";
+ const catD=D(c[0]);const eo=new Date(catD-42*DAY),ec=new Date(catD-21*DAY);
+ const t0=new Date("2026-07-02T00:00:00"),tEnd=D("2026-11-20"),span=tEnd-t0;
+ const pct=x=>Math.min(100,Math.max(0,((x-t0)/span)*100));
+ const nowP=pct(TODAY),shut=TODAY>ec,open=!shut&&TODAY>=eo;
+ const days=Math.round((catD-TODAY)/DAY);
+ const iso=d=>d.toISOString().slice(0,10);
+ return `<div class="runway"><div class="rw-track"><div class="rw-line"></div>
+  <div class="rw-win ${shut?'closed':''}" style="left:${pct(eo)}%;width:${Math.max(2,pct(ec)-pct(eo))}%"></div>
+  <div class="rw-cat" style="left:${pct(catD)}%"></div><div class="rw-now" style="left:${nowP}%"></div></div>
+  <div class="rw-lbls"><span>Jul 2</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov 20</span></div>
+  <div class="rw-cap">◆ <b>${c[1]}</b> — ${dshort(c[0])} <span style="color:${c[2]==='CONF'?'var(--go)':'var(--coil)'}">[${c[2]}]</span> · ${days}d · window ${dshort(iso(eo))}–${dshort(iso(ec))}: <b style="color:${open?'var(--go)':'var(--dim)'}">${shut?'CLOSED':open?'OPEN':'not yet'}</b></div></div>`}
+function vName(){
+ const t=CUR,n=DB[t],g=gate(t);
+ const setups=setupsFor(t);
+ const chips=["ALL"].concat(EXPIRIES).map(e=>`<span class="chip ${n.expSel===e?'on':''}" onclick="DB['${t}'].expSel='${e}';paint()">${e==="ALL"?"all exp":dshort(e)}</span>`).join("");
+ const rows=setups.map(s=>{
+  const rc=s.ret>0.01?"pos":s.ret<-0.01?"neg":"flat",fc=s.flat<-0.01?"neg":"flat";
+  const be=s.be===null?"—":(s.be>=0?"+":"")+(s.be*100).toFixed(0)+"%";
+  return`<tr><td><span class="mono">${dshort(s.exp)} ${s.label}</span><span class="stype">${s.typ}${s.r3ok?"":" · R3⚠"} · ${s.src}</span></td>
+   <td class="flat">${fmt$(s.prem)}</td><td class="${rc}">${(s.ret*100).toFixed(0)}%</td>
+   <td class="flat">${Math.round(s.pwin*100)}%</td><td class="flat">${be}</td>
+   <td class="${fc}">${(s.flat*100).toFixed(0)}%</td>
+   <td><span class="grade g${s.grade==="SKIP"?"S":s.grade}">${s.grade}</span></td></tr>`}).join("");
+ const chainBtn=n.chainState==="live"?`<span class="conf cLIVE">CHAIN LIVE</span>`
+  :n.chainState==="loading"?`<span class="conf cSEED">loading chain…</span>`
+  :`<button class="ldbtn" onclick="loadChain('${t}')">load live option chain</button>`;
+ return `<button class="back" onclick="go('brief')">‹ brief</button>
+ <div class="card">
+  <div class="r1"><span class="tick">${t}</span><span class="gt ${GCLS[g[0]]}" style="font-size:10px;padding:3px 8px;border-radius:5px">${g[0]}</span>
+   ${n.rdy!==null?`<span class="mono" style="font-size:11px;color:var(--muted)">rdy ${n.rdy}</span>`:""}
+   <select class="state mono" onchange="DB['${t}'].state=this.value;paint()">
+    ${["COILED","BASING","EXTENDED","NOSETUP","VERIFY"].map(s=>`<option ${n.state===s?'selected':''}>${s}</option>`).join("")}</select></div>
+  <div class="pxwrap"><span class="pxlbl">spot $</span>
+   <input class="px mono" inputmode="decimal" value="${n.px??''}" placeholder="—" onchange="setPx('${t}',this.value)">
+   <span class="conf c${n.conf}">${n.conf==="LIVE"?"LIVE":n.conf==="SEED"?"SEED — refresh":"NO PRICE — refresh or type"}</span>
+   ${chainBtn}</div>
+  <div class="thesis">${THESIS[t]||""}</div>
+  <div class="gline">${g[1]}</div>
+  ${n.snote?`<div class="note">! ${n.snote}</div>`:""}
+  ${runway(t)}
+  <div class="scn">
+   <label>bear %<input inputmode="numeric" value="${n.scn.bear}" onchange="setScn('${t}','bear',this.value)"></label>
+   <label>base %<input inputmode="numeric" value="${n.scn.base}" onchange="setScn('${t}','base',this.value)"></label>
+   <label>bull %<input inputmode="numeric" value="${n.scn.bull}" onchange="setScn('${t}','bull',this.value)"></label></div>
+  <div class="scncap">${n.scnAuto&&!n.touched?"auto-derived from this name's 20-day volatility × days-to-catalyst":"your override"} — these three numbers ARE the model: every EV / P(win) / b-e / grade below is computed from them.</div>
+  <div class="chips" style="margin-top:12px">${chips}</div>
+  ${n.px?`<table class="setups"><tr><th>setup</th><th>prem</th><th>EV</th><th>P(win)</th><th>b/e</th><th>flat</th><th>gr</th></tr>${rows||"<tr><td colspan=7 class='flat'>no dated catalyst</td></tr>"}</table>`:`<div class="gline" style="color:var(--ext)">No price — tap ⟳ refresh, or type one above.</div>`}
+  <details class="model"><summary>model (IV ${n.iv}% ${n.chainState==="live"?"· chain IV used where present ":""}· crush ×${n.crush} · r 4%)</summary>
+   <div class="mrow"><label>IV %<input inputmode="numeric" value="${n.iv}" onchange="setIV('${t}',this.value)"></label>
+   <label>post-event IV ×<input inputmode="decimal" value="${n.crush}" onchange="setCr('${t}',this.value)"></label></div></details>
+ </div>`}
+function vCal(){
+ const items=ALL.filter(t=>CAT[t]&&CAT[t][0]).map(t=>({t,d:CAT[t][0],l:CAT[t][1],c:CAT[t][2]}))
+  .sort((a,b)=>a.d.localeCompare(b.d));
+ return items.map(({t,d,l,c})=>{
+  const days=Math.round((D(d)-TODAY)/DAY);
+  return`<div class="cal" onclick="go('name','${t}')">
+   <span class="d">${dshort(d)}<br><span style="color:var(--dim);font-size:9.5px">${days>=0?"+":""}${days}d</span></span>
+   <span class="t">${t}</span><span class="l">${l}</span>
+   <span class="cf ${c==="CONF"?"cfC":"cfE"}">${c}</span></div>`}).join("")+
+  `<footer>Chronological catalyst spine. Amber EST dates: confirm T−7. Undated names are not listed by design: no date, no trade.</footer>`}
+let TESTRES=null;
+function _detSeries(){
+ const n=170,ramp=130;let c=[10.0];
+ for(let i=0;i<ramp;i++)c.push(c[c.length-1]*1.012);
+ c=c.slice(1);const base=c[c.length-1];
+ for(let k=0;k<n-ramp;k++){const amp=0.04*(1-k/(n-ramp));c.push(base*(1+0.0008*k)*(1+amp*Math.sin(k*1.05)))}
+ const vol=Array(ramp).fill(1.5e6).concat([...Array(n-ramp)].map((_,k)=>1.5e6*(1.0-0.65*k/((n-ramp)-1))));
+ return {Open:[c[0],...c.slice(0,-1)],High:c.map(x=>x*1.004),Low:c.map(x=>x*0.996),Close:c,Volume:vol};
+}
+async function systemTest(){
+ TESTRES={logic:[],net:[],running:true};paint();
+ const L=(name,ok,d="")=>TESTRES.logic.push({name,ok,d});
+ // logic: scanner parity vs the Python-locked reference
+ const s=scan(_detSeries());
+ L("scanner parity (73.9 / COILED)",s&&s.state==="COILED — ready"&&Math.abs(s.readiness-73.9)<=0.11,s?s.readiness+" "+s.state:"null");
+ // parsers
+ const yp=_yhParse({chart:{result:[{meta:{regularMarketPrice:17.05},indicators:{quote:[{open:[10,11,null],high:[10.2,11.2,12],low:[9.9,10.9,11],close:[10.1,11.1,12.1],volume:[1e6,1e6,1e6]}]}}]}});
+ L("yahoo parser",yp.df.Close.length===2&&yp.px===17.05);
+ const cb=_cboeParse({data:{options:[{option:"MRVL260821C00280000",bid:10,ask:11,iv:0.55}]}});
+ L("cboe parser",cb.length===1&&cb[0].K===280&&cb[0].iv===55);
+ L("spark parser",(_sparkParse({spark:{result:[{symbol:"AAPL",response:[{meta:{regularMarketPrice:230.5}}]}]}}).AAPL===230.5));
+ // engine on pinned inputs (snapshot -> test -> restore)
+ const snapN=JSON.parse(JSON.stringify({px:DB.MRVL.px,state:DB.MRVL.state,scn:DB.MRVL.scn,iv:DB.MRVL.iv,crush:DB.MRVL.crush,expSel:DB.MRVL.expSel}));
+ const snapC=DB.MRVL.chain,snapW={...W};
+ Object.assign(DB.MRVL,{px:274,state:"COILED",scn:{bear:-12,base:10,bull:22},iv:55,crush:0.8,expSel:"ALL",chain:null});
+ W={bear:.30,base:.45,bull:.25};
+ const su=setupsFor("MRVL");
+ const sp=su.find(x=>x.typ==="CALL SPREAD");
+ L("engine known-value (280/315C ≈ A, EV≈+68%)",!!sp&&["A","B"].includes(sp.grade)&&Math.abs(sp.ret-0.68)<0.15,sp?sp.label+" "+sp.grade+" "+(sp.ret*100).toFixed(0)+"%":"none");
+ L("trap row (SKIP) shown",su.some(x=>x.grade==="SKIP"));
+ Object.assign(DB.MRVL,snapN);DB.MRVL.chain=snapC;W=snapW;
+ L("gate: undated = NO-DATE",gate("QBTS")[0]==="NO-DATE",gate("QBTS")[0]);
+ // connectivity probes (device truth)
+ const probe=async(name,fn)=>{const t0=Date.now();try{await fn();return{name,ok:true,ms:Date.now()-t0}}catch(e){return{name,ok:false,ms:Date.now()-t0}}};
+ const tiny="https://query1.finance.yahoo.com/v8/finance/chart/AAPL?range=1d&interval=1d";
+ const probes=await Promise.all([
+  probe("relay corsproxy",()=>fetchOnce(PROXIES[0](tiny),6000)),
+  probe("relay allorigins",()=>fetchOnce(PROXIES[1](tiny),6000)),
+  probe("relay codetabs",()=>fetchOnce(PROXIES[2](tiny),6000)),
+  probe("spark batch",()=>getJSON("https://query1.finance.yahoo.com/v8/finance/spark?symbols=AAPL,MSFT&range=1d&interval=1d")),
+  probe("cboe chain (direct)",()=>fetchOnce("https://cdn.cboe.com/api/global/delayed_quotes/options/AAPL.json",6000)),
+ ]);
+ TESTRES.net=probes;TESTRES.running=false;paint();
+}
+function testPanel(){
+ if(!TESTRES)return `<button class="ldbtn" onclick="systemTest()">run system test — logic + connectivity</button>`;
+ const lg=TESTRES.logic.map(x=>`<div style="font-family:var(--mono);font-size:11px;color:${x.ok?'var(--go)':'var(--ext)'}">${x.ok?'✓':'✗'} ${x.name}${x.d?' · '+x.d:''}</div>`).join("");
+ const nt=TESTRES.running?'<div class="mono" style="font-size:11px;color:var(--dim)">probing relays…</div>'
+  :TESTRES.net.map(x=>`<div style="font-family:var(--mono);font-size:11px;color:${x.ok?'var(--go)':'var(--ext)'}">${x.ok?'✓':'✗'} ${x.name} · ${x.ms}ms</div>`).join("");
+ const lok=TESTRES.logic.every(x=>x.ok);
+ return `<div class="rule" style="border-left-color:${lok?'var(--go)':'var(--ext)'}"><b>SYSTEM TEST</b><br>${lg}<div style="margin-top:6px"><b style="font-size:11px">connectivity (your device):</b></div>${nt}<button class="ldbtn" onclick="systemTest()">re-run</button></div>`;
+}
+function vRules(){
+ return testPanel()+`<div class="rule"><b>How this app works (fully standalone).</b> Tap ⟳: it fetches delayed prices + 1y history per name through public relay endpoints, runs the breakout scanner in your browser, sets states, and auto-derives each name's bear/base/bull from its own volatility. Open a name → "load live option chain" prices setups off the real (delayed) CBOE chain. No terminal, no install. Share the file itself — it carries the whole system.</div>
+ <div class="rule"><b>The two-layer gate.</b> Thesis-ready (dated catalyst ≤45d) × COILED (scanner) = GO. One layer alone = watch, never a position.</div>
+ <div class="rule"><b>Your three numbers per name.</b> bear/base/bull = the price moves you believe the catalyst can produce. Auto-seeded from live volatility; edit them and watch every EV, P(win), grade and the Brief's BEST column move. The weights row (top of Brief) = how likely you think each case is.</div>
+ <div class="rule"><b>R3 · duration ≥ 3× lead.</b> R3⚠ rows are flagged breaches — weeklies can't hold a 1-month lead.</div>
+ <div class="rule"><b>R4 · sleeves.</b> LOTTO + undated stories ≤5% total, never refilled. Catalyst sleeve ≤30% aggregate premium.</div>
+ <div class="rule"><b>R5 · the news is the exit.</b> Sell 50% into first strength; the post-catalyst flip to EXTENDED is take-profit confirmation, never an add.</div>
+ <div class="rule"><b>R6/R8/R9.</b> Commissions ≤1%/mo; journal every exit; two dead catalyst cycles → shares-only.</div>
+ <div class="rule" style="border-left-color:var(--ext)"><b>Honest limits.</b> Data is delayed public data via third-party relays — they can throttle or die (three fallbacks built in; the old Termux feed still works as a backup and is auto-merged if present). Model EVs are outputs of YOUR scenarios, not forecasts. The app names and grades; you size. Not investment advice.</div>`}
+function paint(){
+ document.getElementById("view").innerHTML=VIEW==="brief"?vBrief():VIEW==="name"?vName():VIEW==="cal"?vCal():vRules();
+ ["nb","nc","nr"].forEach(id=>document.getElementById(id).classList.remove("on"));
+ document.getElementById(VIEW==="cal"?"nc":VIEW==="rules"?"nr":"nb").classList.add("on");
+ window.scrollTo(0,0)}
+window.setPx=(t,v)=>{const x=parseFloat(v);if(x>0){DB[t].px=x;DB[t].conf="LIVE";paint()}};
+window.setIV=(t,v)=>{const x=parseFloat(v);if(x>0){DB[t].iv=x;paint()}};
+window.setCr=(t,v)=>{const x=parseFloat(v);if(x>0){DB[t].crush=x;paint()}};
+window.setScn=(t,k,v)=>{const x=parseFloat(v);if(!isNaN(x)){DB[t].scn[k]=x;DB[t].touched=true;paint()}};
+window.setW=(k,v)=>{const x=Math.max(0,parseFloat(v)||0);W[k]=x;const s=W.bear+W.base+W.bull||1;W={bear:W.bear/s,base:W.base/s,bull:W.bull/s};paint()};
+if(window.FEED&&FEED.quotes&&Object.keys(FEED.quotes).length){
+ const tg=document.getElementById("feedtag");tg.textContent="LIVE";tg.className="feedtag live";
+ setHdr("feed "+FEED.asof+" merged · tap ⟳ for fresh in-app data");
+}
+paint();
+</script>
+</body>
+</html>
