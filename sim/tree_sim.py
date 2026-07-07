@@ -60,6 +60,9 @@ def bs_call(S, K, Ty, iv, r=0.04):
     sq = iv * math.sqrt(Ty)
     d1 = (math.log(S / K) + (r + iv * iv / 2) * Ty) / sq
     return S * _phi(d1) - K * math.exp(-r * Ty) * _phi(d1 - sq)
+def bs_put(S, K, Ty, iv, r=0.04):
+    if Ty <= 1e-6: return max(0.0, K - S)
+    return bs_call(S, K, Ty, iv) - S + K * math.exp(-r * Ty)
 def spread_val(S, K1, K2, days_rem, iv):
     Ty = max(days_rem, 0) / 365
     return bs_call(S, K1, Ty, iv) - bs_call(S, K2, Ty, iv)
@@ -203,6 +206,74 @@ def run_agent(world, tree_on, rng):
         peak = max(peak, x); dd = min(dd, x / peak - 1)
     return nav - 100, navs, trades, dd * 100
 
+def find_strike(S, dte, iv, budget, side="C"):
+    """closest strike whose model premium fits the budget (per share)."""
+    step = 0.025
+    for k in range(1, 40):
+        K = S * (1 + step * k) if side == "C" else S * (1 - step * k)
+        prem = bs_call(S, K, dte/365, iv) if side == "C" else bs_put(S, K, dte/365, iv)
+        if prem <= budget and prem >= 0.05:
+            return K, prem
+    return None, None
+
+def run_lotto(world, variant, risk, rng, budget=0.60):
+    """L1 hold→print+1 · L2 +4x pre-print TP · L3 +40% stop · L4 tree-directional (puts post-kill)."""
+    nav, navs, trades = 100.0, [], []
+    pos = {}
+    eff, res = world["eff"], world["res"]
+    for i in range(44):
+        killed = eff["kill_at"] is not None and i > eff["kill_at"]
+        # stance (resolved-only, same math as app)
+        sc, wsum = 0.0, 0.0
+        for nid, dend, brs in TREE:
+            wsum += W[nid]
+            sc += W[nid] * (MOODV[res[nid][1]] if (nid in res and i > dend) else sum(p*MOODV[m] for p, m, _ in brs))
+        stance = 50 + 50 * sc / wsum
+        # exits
+        for t in list(pos):
+            p = pos[t]; S = world["px"][t][i]
+            rem = max(p["exp_i"] - i, 0)
+            ci = IDX.get(dt.date.fromisoformat(NAMES[t][2]), None)
+            iv_now = NAMES[t][1] / 100 * (0.6 if (ci is not None and i > ci and p["side"] == "C") else 1.0)
+            val = (bs_call if p["side"] == "C" else bs_put)(S, p["K"], rem*365/252/365, iv_now)
+            cost = min(0.25, 0.04 / p["prem"]) + 0.02
+            hit_tp  = variant in ("L2","L4") and ci is not None and i < ci and val >= 4 * p["prem"]
+            hit_stp = variant == "L3" and val <= 0.4 * p["prem"]
+            at_r5   = (ci is not None and i == ci + 1 and p["side"] == "C")
+            put_out = p["side"] == "P" and (i - p["entry_i"] >= 8 or val >= 3 * p["prem"])
+            if hit_tp or hit_stp or at_r5 or put_out or rem <= 0 or i == 43:
+                pl = (val - p["prem"]) / p["prem"] - cost
+                pl = max(pl, -1.0)
+                nav += nav * p["risk"] * pl
+                trades.append((t, pl, p["side"])); del pos[t]
+        # entries — LOW trade: max 3 concurrent, tight window
+        if len(pos) < 3:
+            if not killed and stance >= 55:
+                for t, (S0, iv, cat, cls) in NAMES.items():
+                    if t in pos or len(pos) >= 3: continue
+                    ci = IDX.get(dt.date.fromisoformat(cat), None)
+                    if ci is None: continue
+                    dtc = ci - i
+                    if not (3 <= dtc <= 8): continue
+                    if world["state"][t][i] != "COILED": continue
+                    S = world["px"][t][i]
+                    dte = dtc + 10
+                    K, prem = find_strike(S, dte, iv/100, budget, "C")
+                    if K is None: continue
+                    pos[t] = {"side":"C","K":K,"prem":prem,"exp_i":ci+10,"entry_i":i,"risk":risk}
+            elif variant == "L4" and killed:
+                for t, (S0, iv, cat, cls) in NAMES.items():
+                    if t in pos or len(pos) >= 3: continue
+                    S = world["px"][t][i]
+                    K, prem = find_strike(S, 15, iv/100, budget, "P")
+                    if K is None or rng.random() > 0.5: continue
+                    pos[t] = {"side":"P","K":K,"prem":prem,"exp_i":min(43,i+15),"entry_i":i,"risk":risk}
+        navs.append(nav)
+    peak, dd = navs[0], 0.0
+    for x in navs:
+        peak = max(peak, x); dd = min(dd, x/peak - 1)
+    return nav - 100, navs, trades, dd*100
+
 def buy_hold(world):
     r = sum(world["px"][t][43] / NAMES[t][0] - 1 for t in NAMES) / len(NAMES)
     return 100 * r
@@ -221,9 +292,11 @@ def main():
     ap.add_argument("--trials", type=int, default=3000)
     ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--no-ramp", action="store_true", help="A4-off: kill the anticipation drift")
+    ap.add_argument("--lotto", action="store_true", help="run the cheap-premium single-leg battery (L1-L4) alongside")
+    ap.add_argument("--risk", type=float, default=0.01, help="lotto NAV fraction per trade")
     a = ap.parse_args()
     rng = random.Random(a.seed)
-    rows, eq_tree, eq_flat = [], [0.0] * 44, [0.0] * 44
+    rows, eq_tree, eq_flat, eq_l2 = [], [0.0]*44, [0.0]*44, [0.0]*44
     for k in range(a.trials):
         w = gen_world(rng, a.no_ramp)
         arng = random.Random(a.seed * 100003 + k)
@@ -231,8 +304,16 @@ def main():
         arng2 = random.Random(a.seed * 100003 + k)  # same agent noise
         pl_f, navs_f, tr_f, dd_f = run_agent(w, False, arng2)
         bh = buy_hold(w)
-        rows.append({"cls": classify(w["res"], w["eff"]), "tree": pl_t, "flat": pl_f, "bh": bh,
-                     "trades": tr_t, "ntr": len(tr_t), "dd_t": dd_t, "dd_f": dd_f})
+        row={"cls": classify(w["res"], w["eff"]), "tree": pl_t, "flat": pl_f, "bh": bh,
+                     "trades": tr_t, "ntr": len(tr_t), "dd_t": dd_t, "dd_f": dd_f}
+        if a.lotto:
+            for vr in ("L1","L2","L3","L4"):
+                lrng = random.Random(a.seed*7919 + k*13 + hash(vr)%97)
+                plv, navv, trv, ddv = run_lotto(w, vr, a.risk, lrng)
+                row[vr]=plv; row[vr+"_tr"]=trv; row[vr+"_dd"]=ddv
+                if vr=="L2":
+                    for j in range(44): eq_l2[j]+=navv[j]
+        rows.append(row)
         for i in range(44):
             eq_tree[i] += navs_t[i]; eq_flat[i] += navs_f[i]
     n = a.trials
@@ -243,7 +324,7 @@ def main():
         v.sort()
         return dict(n=len(v), mean=st.mean(v), med=st.median(v), p5=v[int(.05*len(v))], p95=v[int(.95*len(v))-1],
                     win=sum(1 for x in v if x > 0) / len(v))
-    out = {"trials": n, "seed": a.seed, "ramp": not a.no_ramp,
+    out = {"trials": n, "seed": a.seed, "ramp": not a.no_ramp, "eq_l2":[x/n for x in eq_l2] if a.lotto else None,
            "dd": {"tree": st.mean([r["dd_t"] for r in rows]), "flat": st.mean([r["dd_f"] for r in rows])},
            "overall": {"tree": agg("tree"), "flat": agg("flat"), "bh": agg("bh")},
            "by_class": {}, "per_name": {}, "eq_tree": eq_tree, "eq_flat": eq_flat}
@@ -257,11 +338,23 @@ def main():
         for t, pl in r["trades"]: pn.setdefault(t, []).append(pl)
     for t, v in pn.items():
         out["per_name"][t] = {"trades": len(v), "avg_pl": st.mean(v), "win": sum(1 for x in v if x > 0) / len(v)}
+    if a.lotto:
+        out["lotto"]={}
+        for vr in ("L1","L2","L3","L4"):
+            out["lotto"][vr]=agg(vr)
+            alltr=[pl for r in rows for (_,pl,_) in r[vr+"_tr"]]
+            wins=[x for x in alltr if x>0]
+            out["lotto"][vr+"_trade"]={"n":len(alltr),"per_world":len(alltr)/n,
+              "win":len(wins)/max(1,len(alltr)),"avg_win":st.mean(wins) if wins else 0,
+              "avg_loss":st.mean([x for x in alltr if x<=0]) if len(wins)<len(alltr) else 0,
+              "dd":st.mean([r[vr+"_dd"] for r in rows])}
+        out["lotto"]["neg_worlds"]={vr: sum(1 for r in rows if r[vr]<0)/n for vr in ("L1","L2","L3","L4")}
     # invariants
     assert "MU" not in pn, "MU traded — no-date/out-of-window gate broken"
     avg_tr = st.mean([r["ntr"] for r in rows])
     out["avg_trades_per_world"] = avg_tr
-    print(json.dumps({k: out[k] for k in ("trials", "ramp", "overall", "dd", "by_class", "per_name", "avg_trades_per_world")},
+    keys=["trials","ramp","overall","dd","by_class","per_name","avg_trades_per_world"]+(["lotto"] if a.lotto else [])
+    print(json.dumps({k: out[k] for k in keys},
                      indent=1, default=lambda x: round(x, 2) if isinstance(x, float) else x))
     json.dump(out, open("/tmp/sim_out.json", "w"), default=float)
 
