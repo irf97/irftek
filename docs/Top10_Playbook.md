@@ -30,8 +30,32 @@
 **NVDA + OKTA · Aug 26** — same-day pair: treat as ONE exposure (combined ≤4% risk). NVDA is the referendum; OKTA is its shadow at better prices.
 **AVGO · Sep 03** — conditional card: T−10 lands ON the MRVL print. Rule: open only if MRVL's reaction is constructive (N5 not resolved bear). The $16B bar does the rest.
 
-## Satellite cards (lotto L2)
-**VICR · Jul 28 CONF** — first satellite live: window Jul 17–23, ≤$0.60 call ~10–15% OTM, TP 4×, exit Jul 29 open into the FOMC. **HIMX · Aug 06** — glasses print, window Jul 27–Aug 3. **NVTS · Aug 10** — window Jul 29–Aug 5; the torque-#1/sizing-#17 name, played at 1% where that contradiction is safe.
+## Satellite cards — SPEC CORRECTED (v1.1)
+The original "≤$0.60 premium" filter was a price-class artifact: on today's board it buys 30–40% OTM
+lotteries on everything except HIMX (operator caught this). Retired. **True spec: single-leg call,
+10–15% OTM, Δ≈0.15–0.30, premium ≲1.5% of spot, 1% NAV per trade, ≤3 concurrent, TP 4× pre-print,
+else exit print+1, no stops.** On sub-$15 names this coincides with sub-$1 premiums — which is why
+the old dollar rule worked historically.
+**HIMX · Aug 06** — ~15C ≈ $0.55–0.65, Δ~0.28 · window Jul 27–Aug 3.
+**NVTS · Aug 10** — ~15.5C ≈ $1.2–1.5, Δ~0.30 · window Jul 29–Aug 5 · note: live px slid to ~13.9.
+**SMCI · Aug 05** — ~28.5C ≈ $1.0–1.3 · verify the chain quality first (post-collapse name).
+**VICR → moved to CORE** (spread 265/300, table above): at $254 no sane single-leg exists under lotto sizing.
+
+## The literal contracts (CORE spreads — ARM's card is HERE, it was never a $0.60 name)
+| tk | px | buy | sell | exp≈ | debit≈ | max | r/r |
+|---|---|---|---|---|---|---|---|
+| TSM | 431.8 | 455C | 510C | Aug06 | 7.90 | 47.1 | 6.0× |
+| KLAC | 212.9 | 225C | 250C | Aug20 | 5.50 | 19.5 | 3.5× |
+| NET | 257.5 | 270C | 305C | Aug21 | 8.17 | 26.8 | 3.3× |
+| ETN | 390.1 | 410C | 460C | Aug21 | 8.67 | 41.3 | 4.8× |
+| ANET | 164.2 | 170C | 195C | Aug25 | 6.26 | 18.7 | 3.0× |
+| **ARM** | 306.8 | **320C** | **360C** | Aug26 | 10.26 | 29.7 | 2.9× |
+| MRVL | 227.0 | 240C | 270C | Sep10 | 8.39 | 21.6 | 2.6× |
+| NVDA | 193.1 | 205C | 230C | Sep16 | 6.15 | 18.8 | 3.1× |
+| OKTA | 145.8 | 155C | 170C | Sep16 | 4.09 | 10.9 | 2.7× |
+| AVGO | 364.6 | 385C | 430C | Sep24 | 12.05 | 33.0 | 2.7× |
+| VICR | 253.7 | 265C | 300C | Aug18 | 9.62 | 25.4 | 2.6× |
+*Indicative BS at seed IV — the app's engine re-prices from the live chain and grades A/B before any entry. Strikes rounded to listed increments; debits will drift with the tape.*
 
 ## Sim receipts (dedicated runs, same seed/worlds)
 | sleeve | mean | med | p5 | win | DD | trades/w |
