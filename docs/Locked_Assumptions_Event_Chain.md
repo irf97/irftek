@@ -25,7 +25,7 @@ evidenced, and given a falsifier BEFORE the window opens. R8 journals against it
 scare + weak payrolls + Warsh dots) works itself out; leveraged-ETF forced selling exhausts.
 *Model behavior: flat-to-soft, repair. Confirm: SOX holds the June lows. Break: new lows on volume.*
 
-**Phase 1 · Jul 20–31 — Proof week.** VICR print Jul 21 (energy-axis first read) → mega-cap
+**Phase 1 · Jul 20–31 — Proof week.** VICR print Jul 28 CONF (energy-axis first read — now INSIDE proof week: same day as MSFT, FOMC the next morning) → mega-cap
 prints Jul 23–30 (INTC/TSLA/NOW 23rd, MSFT 28th, GOOGL 29th, AMZN/QCOM 30th) where **capex
 guidance is the truth serum** (UBS's framing: this earnings season IS the AI-thesis test) →
 **FOMC Jul 28–29 lands mid-prints** (A9's live test) → Rubin first-shipment PRs possible any
