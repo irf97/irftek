@@ -37,6 +37,12 @@ NAMES = {
  "GEV":  (1044.1, 42, "2026-07-22", "comp"),
  "MU":   (986.00, 75, "2026-09-21", "attach"),  # print OUTSIDE window -> must never trade
 }
+NAMES_EXT = {
+ "ARM":  (306.835, 45, "2026-08-05", "attach"), "TSM": (431.7991, 35, "2026-07-16", "anchor"),
+ "NET":  (257.49, 45, "2026-07-31", "attach"), "ETN": (390.06, 32, "2026-07-31", "comp"),
+ "ANET": (164.15, 45, "2026-08-04", "attach"), "KLAC":(212.945, 42, "2026-07-30", "comp"),
+}
+NAMES.update(NAMES_EXT)
 ATR = {t: max(2.0, min(8.0, iv / 16)) / 100 for t, (_, iv, _, _) in NAMES.items()}
 LAG = {"anchor": 15, "attach": 12, "comp": 8}
 
@@ -294,8 +300,13 @@ def main():
     ap.add_argument("--no-ramp", action="store_true", help="A4-off: kill the anticipation drift")
     ap.add_argument("--lotto", action="store_true", help="run the cheap-premium single-leg battery (L1-L4) alongside")
     ap.add_argument("--risk", type=float, default=0.01, help="lotto NAV fraction per trade")
+    ap.add_argument("--names", type=str, default="", help="comma list to restrict the tradeable universe")
     a = ap.parse_args()
     rng = random.Random(a.seed)
+    if a.names:
+        keep=set(x.strip() for x in a.names.split(","))
+        for t in list(NAMES):
+            if t not in keep: del NAMES[t]
     rows, eq_tree, eq_flat, eq_l2 = [], [0.0]*44, [0.0]*44, [0.0]*44
     for k in range(a.trials):
         w = gen_world(rng, a.no_ramp)
