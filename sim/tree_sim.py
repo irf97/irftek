@@ -43,8 +43,19 @@ NAMES_EXT = {
  "ANET": (164.15, 45, "2026-08-04", "attach"), "KLAC":(212.945, 42, "2026-07-30", "comp"),
 }
 NAMES.update(NAMES_EXT)
+NAMES_FOCUS = {
+ "SOUN": (6.845, 95, "2026-08-06", "event"),
+ "IONQ": (44.84, 100, "2026-08-06", "event"),
+ "SERV": (6.09, 110, "2026-08-06", "event"),
+ "RR": (1.9099, 120, "2026-08-13", "event"),
+ "SMCI": (25.54, 75, "2026-08-05", "comp"),
+ "AI": (8.99, 80, "2026-09-02", "event"),
+ "AIP": (31.845, 80, "2026-08-05", "comp"),
+ "SYM": (41.63, 70, "2026-08-05", "event"),
+}
+NAMES.update(NAMES_FOCUS)
 ATR = {t: max(2.0, min(8.0, iv / 16)) / 100 for t, (_, iv, _, _) in NAMES.items()}
-LAG = {"anchor": 15, "attach": 12, "comp": 8}
+LAG = {"anchor": 15, "attach": 12, "comp": 8, "event": 10}
 
 # ---------- the tree (mirrors docs/Event_Tree.md) ----------
 TREE = [
