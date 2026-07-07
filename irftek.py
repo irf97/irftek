@@ -314,9 +314,9 @@ CAT = {
   "EST"
  ],
  "VICR": [
-  "2026-07-21",
-  "Q2 \u2014 VPD 2.0",
-  "EST"
+  "2026-07-28",
+  "Q2 \u2014 raised guide $126M \u00b7 2nd-gen VPD \u00b7 wafer-scale ramp \u00b7 insider-sale overhang",
+  "CONF"
  ],
  "POWI": [
   "2026-08-04",
