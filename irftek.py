@@ -32,84 +32,684 @@ import argparse, json, math, random, sys, time, datetime as dt
 # 0 · UNIVERSE + CALENDAR (embedded; watchlist_config.py overrides tiers)
 # =====================================================================
 TIERS = {
- "core": ["NVTS","CRWV","MRVL","AVGO","AMD","MU","OKTA","NVDA","ARM","INTC",
-          "AAPL","MSFT","GOOGL","META","AMZN","DELL","QCOM","TSLA","NOW","NET",
-          "DDOG","CRWD","PANW"],
- "event": ["SERV","ONDS","AAOI","POET","RR","CBRS","IONQ","TEM","QBTS","RGTI",
-           "RXRX","SOUN"],
- "component": ["HIMX","VICR","POWI","MPWR","CRUS","AMKR","AEHR","FORM","TTMI",
-               "SNDK","SITM","CEVA","AIP","VUZI","SLAB","LSCC","AMBA"],
- "bench": ["SAIL","MDB","PATH","LITE","IBM","TER","ISRG","CRM","ESTC","DT",
-           "AKAM","FSLY","KOPN","QUBT","SDGR"],
+ "core": [
+  "NVTS",
+  "CRWV",
+  "MRVL",
+  "AVGO",
+  "AMD",
+  "MU",
+  "OKTA",
+  "NVDA",
+  "ARM",
+  "INTC",
+  "AAPL",
+  "MSFT",
+  "GOOGL",
+  "META",
+  "AMZN",
+  "DELL",
+  "QCOM",
+  "TSLA",
+  "NOW",
+  "NET",
+  "DDOG",
+  "CRWD",
+  "PANW",
+  "TSM",
+  "ASML",
+  "ORCL",
+  "PLTR",
+  "ANET",
+  "SNOW",
+  "SNPS"
+ ],
+ "event": [
+  "SERV",
+  "ONDS",
+  "AAOI",
+  "POET",
+  "RR",
+  "CBRS",
+  "IONQ",
+  "TEM",
+  "QBTS",
+  "RGTI",
+  "RXRX",
+  "SOUN",
+  "SYM",
+  "AVAV",
+  "AI"
+ ],
+ "component": [
+  "HIMX",
+  "VICR",
+  "POWI",
+  "MPWR",
+  "CRUS",
+  "AMKR",
+  "AEHR",
+  "FORM",
+  "TTMI",
+  "SNDK",
+  "SITM",
+  "CEVA",
+  "AIP",
+  "VUZI",
+  "SLAB",
+  "LSCC",
+  "AMBA",
+  "ALAB",
+  "CRDO",
+  "COHR",
+  "SMCI",
+  "CLS",
+  "FN",
+  "ON",
+  "STM",
+  "TXN",
+  "ADI",
+  "LRCX",
+  "AMAT",
+  "KLAC",
+  "WDC",
+  "CDNS",
+  "TER"
+ ],
+ "grid": [
+  "VRT",
+  "GEV",
+  "ETN",
+  "VST",
+  "CEG",
+  "TLN",
+  "NRG",
+  "PWR",
+  "SMR",
+  "MOD",
+  "NVT",
+  "EQIX",
+  "DLR"
+ ],
+ "bench": [
+  "SAIL",
+  "MDB",
+  "PATH",
+  "LITE",
+  "IBM",
+  "ISRG",
+  "CRM",
+  "ESTC",
+  "DT",
+  "AKAM",
+  "FSLY",
+  "KOPN",
+  "QUBT",
+  "SDGR"
+ ]
 }
-TERMINAL = ["MRVL","NVTS","CRWV","AVGO","AMD","MU","OKTA"]
-try:
-    import watchlist_config as _wc
-    TIERS = getattr(_wc, "TIERS", TIERS); TERMINAL = getattr(_wc, "TERMINAL", TERMINAL)
-except Exception:
-    pass
 ALL = [t for v in TIERS.values() for t in v]
 
 # Catalyst calendar (session-verified spine; CONF = confirmed, EST = fiscal-
 # cadence estimate -> confirm T-7). date "None" = undated (no thesis window).
 CAT = {
- "MRVL":("2026-08-20","Q2 print — first after NVIDIA $2B/NVLink Fusion","CONF"),
- "NVDA":("2026-08-26","Q2 print — first with Rubin shipping","CONF"),
- "AVGO":("2026-09-03","Q3 print — $16B AI-semi guide is the bar","CONF"),
- "MU":("2026-09-21","FQ1 print — $50B guide; Micron named on Spark board","EST"),
- "NVTS":("2026-08-10","Earnings (Aug 3-17 conflict) + Rubin 800V racks Q3","EST"),
- "AMD":("2026-08-04","Q2 print + MI450 1GW deployment begins","EST"),
- "CRWV":("2026-08-12","Q2 print + Rubin deployment PRs (launch partner)","EST"),
- "OKTA":("2026-08-26","Q2 print + agent-identity cycle (Layer D)","EST"),
- "AAPL":("2026-09-09","iPhone/M5 event — Spark response stage","EST"),
- "META":("2026-09-17","Connect — glasses/ambient stage","EST"),
- "ARM":("2026-08-05","Q1 print — first with Spark design-wins narrative","EST"),
- "INTC":("2026-07-23","Q2 print — foundry + Arm-PC two-sided","EST"),
- "QCOM":("2026-07-30","Q3 print — Spark loser vs glasses winner","EST"),
- "MSFT":("2026-07-28","Capex + Copilot/agent print","EST"),
- "GOOGL":("2026-07-29","Capex + Gemini/agent print","EST"),
- "AMZN":("2026-07-30","Capex print","EST"),
- "TSLA":("2026-07-23","Q2 print (Optimus line)","EST"),
- "DELL":("2026-08-27","Q2 print — Spark OEM + AI server attach","EST"),
- "NOW":("2026-07-23","Q2 print — agentic workflow","EST"),
- "NET":("2026-07-31","Q2 print — agent platform/Durable Objects","EST"),
- "DDOG":("2026-08-06","Q2 print — AI observability","EST"),
- "CRWD":("2026-08-27","Q2 print — agentic security","EST"),
- "PANW":("2026-08-19","FQ4 print — CyberArk integration","EST"),
- "SERV":("2026-08-06","Q2 print + fleet PRs","EST"),
- "ONDS":("2026-08-11","Q2 print + defense drone flow","EST"),
- "AAOI":("2026-08-06","Q2 print — optical = Rubin cluster pace","EST"),
- "RR":("2026-08-13","Q2 print — squeeze mechanics","EST"),
- "CBRS":("2026-08-24","Hot Chips stage (no print in window)","EST"),
- "IONQ":("2026-08-06","Q2 print + networking milestones","EST"),
- "TEM":("2026-08-04","Q2 print","EST"),
- "QBTS":(None,"Undated CHIPS/contract headlines","EST"),
- "RGTI":(None,"Undated milestones","EST"),
- "RXRX":(None,"Binary readout — only if dated","EST"),
- "POET":(None,"Undated design-win PRs","EST"),
- "SOUN":("2026-08-06","Q2 print — on-device voice agents","EST"),
- "HIMX":("2026-08-06","Q2 print — glasses display engine + WiseEye","EST"),
- "VICR":("2026-07-21","Q2 print — VPD 2.0, record Q1","EST"),
- "POWI":("2026-08-04","Q2 print — 1250/1700V GaN, laptop chargers","EST"),
- "MPWR":("2026-07-31","Q2 print — NVIDIA VRM incumbent","EST"),
- "CRUS":("2026-07-29","FQ1 print — Apple + Windows-laptop expansion","EST"),
- "AMKR":("2026-07-27","Q2 print — Apple AZ packaging","EST"),
- "FORM":("2026-07-29","Q2 print — HBM/logic probe cards","EST"),
- "TTMI":("2026-07-29","Q2 print — AI PCBs","EST"),
- "SNDK":("2026-08-05","Print — client NAND for local AI","EST"),
- "SITM":("2026-08-05","Print — AI timing","EST"),
- "CEVA":("2026-08-10","Print — edge-AI IP royalty","EST"),
- "AIP":("2026-08-05","Print — NoC IP (shares-only chains)","EST"),
- "AEHR":(None,"Undated customer-order PRs (lotto until dated)","EST"),
- "VUZI":(None,"Undated OEM wins (HIMX expresses it better)","EST"),
+ "MRVL": [
+  "2026-08-20",
+  "Q2 print \u2014 first after NVIDIA $2B/NVLink Fusion",
+  "CONF"
+ ],
+ "NVDA": [
+  "2026-08-26",
+  "Q2 print \u2014 first with Rubin revenue",
+  "CONF"
+ ],
+ "AVGO": [
+  "2026-09-03",
+  "Q3 print \u2014 the $16B AI bar it set itself",
+  "CONF"
+ ],
+ "MU": [
+  "2026-09-21",
+  "FQ1 \u2014 $50B guide; on the Spark board",
+  "EST"
+ ],
+ "NVTS": [
+  "2026-08-10",
+  "Earnings + Rubin 800V racks Q3",
+  "EST"
+ ],
+ "AMD": [
+  "2026-08-04",
+  "Q2 + MI450 1GW begins",
+  "EST"
+ ],
+ "CRWV": [
+  "2026-08-12",
+  "Q2 + Rubin deployment PRs",
+  "EST"
+ ],
+ "OKTA": [
+  "2026-08-26",
+  "Q2 + agent identity",
+  "EST"
+ ],
+ "AAPL": [
+  "2026-09-09",
+  "iPhone/M5 \u2014 Spark response",
+  "EST"
+ ],
+ "META": [
+  "2026-09-17",
+  "Connect \u2014 glasses stage",
+  "EST"
+ ],
+ "ARM": [
+  "2026-08-05",
+  "Q1 \u2014 Spark design wins",
+  "EST"
+ ],
+ "INTC": [
+  "2026-07-23",
+  "Q2 \u2014 foundry two-sided",
+  "EST"
+ ],
+ "QCOM": [
+  "2026-07-30",
+  "Q3 \u2014 glasses silicon",
+  "EST"
+ ],
+ "MSFT": [
+  "2026-07-28",
+  "Capex + Copilot",
+  "EST"
+ ],
+ "GOOGL": [
+  "2026-07-29",
+  "Capex + Gemini",
+  "EST"
+ ],
+ "AMZN": [
+  "2026-07-30",
+  "Capex print",
+  "EST"
+ ],
+ "TSLA": [
+  "2026-07-23",
+  "Q2 (Optimus)",
+  "EST"
+ ],
+ "DELL": [
+  "2026-08-27",
+  "Q2 \u2014 Spark OEM",
+  "EST"
+ ],
+ "NOW": [
+  "2026-07-23",
+  "Q2 \u2014 agentic workflow",
+  "EST"
+ ],
+ "NET": [
+  "2026-07-31",
+  "Q2 \u2014 agent platform",
+  "EST"
+ ],
+ "DDOG": [
+  "2026-08-06",
+  "Q2 \u2014 AI observability",
+  "EST"
+ ],
+ "CRWD": [
+  "2026-08-27",
+  "Q2 \u2014 agentic SOC",
+  "EST"
+ ],
+ "PANW": [
+  "2026-08-19",
+  "FQ4 \u2014 CyberArk",
+  "EST"
+ ],
+ "SERV": [
+  "2026-08-06",
+  "Q2 + fleet PRs",
+  "EST"
+ ],
+ "ONDS": [
+  "2026-08-11",
+  "Q2 defense drones",
+  "EST"
+ ],
+ "AAOI": [
+  "2026-08-06",
+  "Q2 \u2014 optics pace",
+  "EST"
+ ],
+ "RR": [
+  "2026-08-13",
+  "Q2 squeeze",
+  "EST"
+ ],
+ "CBRS": [
+  "2026-08-24",
+  "Hot Chips stage",
+  "EST"
+ ],
+ "IONQ": [
+  "2026-08-06",
+  "Q2 milestones",
+  "EST"
+ ],
+ "TEM": [
+  "2026-08-04",
+  "Q2",
+  "EST"
+ ],
+ "SOUN": [
+  "2026-08-06",
+  "Q2 voice agents",
+  "EST"
+ ],
+ "HIMX": [
+  "2026-08-06",
+  "Q2 \u2014 glasses engine",
+  "EST"
+ ],
+ "VICR": [
+  "2026-07-21",
+  "Q2 \u2014 VPD 2.0",
+  "EST"
+ ],
+ "POWI": [
+  "2026-08-04",
+  "Q2 \u2014 GaN chargers",
+  "EST"
+ ],
+ "MPWR": [
+  "2026-07-31",
+  "Q2 \u2014 VRM incumbent",
+  "EST"
+ ],
+ "CRUS": [
+  "2026-07-29",
+  "FQ1 \u2014 Apple + laptops",
+  "EST"
+ ],
+ "AMKR": [
+  "2026-07-27",
+  "Q2 \u2014 AZ packaging",
+  "EST"
+ ],
+ "FORM": [
+  "2026-07-29",
+  "Q2 \u2014 probe cards",
+  "EST"
+ ],
+ "TTMI": [
+  "2026-07-29",
+  "Q2 \u2014 AI PCBs",
+  "EST"
+ ],
+ "SNDK": [
+  "2026-08-05",
+  "Print \u2014 client NAND",
+  "EST"
+ ],
+ "SITM": [
+  "2026-08-05",
+  "Print \u2014 timing",
+  "EST"
+ ],
+ "CEVA": [
+  "2026-08-10",
+  "Print \u2014 edge IP",
+  "EST"
+ ],
+ "AIP": [
+  "2026-08-05",
+  "Print \u2014 NoC IP",
+  "EST"
+ ],
+ "QBTS": [
+  None,
+  "Undated headlines",
+  "EST"
+ ],
+ "RGTI": [
+  None,
+  "Undated milestones",
+  "EST"
+ ],
+ "RXRX": [
+  None,
+  "Binary \u2014 dated or nothing",
+  "EST"
+ ],
+ "POET": [
+  None,
+  "Undated design wins",
+  "EST"
+ ],
+ "AEHR": [
+  None,
+  "Undated order PRs",
+  "EST"
+ ],
+ "VUZI": [
+  None,
+  "Undated OEM wins",
+  "EST"
+ ],
+ "TSM": [
+  "2026-07-16",
+  "Q2 \u2014 the wave's foundry print",
+  "EST"
+ ],
+ "ASML": [
+  "2026-07-15",
+  "Q2 \u2014 litho orders = 2027 capacity",
+  "EST"
+ ],
+ "ORCL": [
+  "2026-09-09",
+  "FQ1 \u2014 OCI AI backlog",
+  "EST"
+ ],
+ "PLTR": [
+  "2026-08-03",
+  "Q2 \u2014 AIP bootcamps\u2192contracts",
+  "EST"
+ ],
+ "ANET": [
+  "2026-08-04",
+  "Q2 \u2014 AI-cluster networking share",
+  "EST"
+ ],
+ "SNOW": [
+  "2026-08-26",
+  "Q2 \u2014 AI data cloud",
+  "EST"
+ ],
+ "SNPS": [
+  "2026-08-19",
+  "FQ3 \u2014 every chip starts in EDA",
+  "EST"
+ ],
+ "CDNS": [
+  "2026-07-27",
+  "Q2 \u2014 EDA + IP",
+  "EST"
+ ],
+ "ALAB": [
+  "2026-08-04",
+  "Q2 \u2014 PCIe/CXL retimers in every rack",
+  "EST"
+ ],
+ "CRDO": [
+  "2026-09-02",
+  "FQ1 \u2014 AEC cables per GPU",
+  "EST"
+ ],
+ "COHR": [
+  "2026-08-12",
+  "FQ4 \u2014 optics/lasers",
+  "EST"
+ ],
+ "SMCI": [
+  "2026-08-05",
+  "FQ4 \u2014 rack integration",
+  "EST"
+ ],
+ "CLS": [
+  "2026-07-27",
+  "Q2 \u2014 hyperscaler ODM",
+  "EST"
+ ],
+ "FN": [
+  "2026-08-03",
+  "FQ4 \u2014 optical manufacturing",
+  "EST"
+ ],
+ "ON": [
+  "2026-08-03",
+  "Q2 \u2014 SiC (the NVTS contest)",
+  "EST"
+ ],
+ "STM": [
+  "2026-07-23",
+  "Q2 \u2014 800V competitor print",
+  "EST"
+ ],
+ "TXN": [
+  "2026-07-21",
+  "Q2 \u2014 analog power breadth",
+  "EST"
+ ],
+ "ADI": [
+  "2026-08-19",
+  "FQ3 \u2014 precision analog",
+  "EST"
+ ],
+ "LRCX": [
+  "2026-07-29",
+  "FQ4 \u2014 etch/depo capex",
+  "EST"
+ ],
+ "AMAT": [
+  "2026-08-13",
+  "FQ3 \u2014 wfe barometer",
+  "EST"
+ ],
+ "KLAC": [
+  "2026-07-30",
+  "FQ4 \u2014 yield = capex truth",
+  "EST"
+ ],
+ "WDC": [
+  "2026-07-29",
+  "FQ4 \u2014 nearline AI storage",
+  "EST"
+ ],
+ "TER": [
+  "2026-07-22",
+  "Q2 \u2014 test + robotics",
+  "EST"
+ ],
+ "VRT": [
+  "2026-07-22",
+  "Q2 \u2014 power/cooling backlog (the Vertiv precedent, live)",
+  "EST"
+ ],
+ "GEV": [
+  "2026-07-22",
+  "Q2 \u2014 turbines/grid for AI load",
+  "EST"
+ ],
+ "ETN": [
+  "2026-07-31",
+  "Q2 \u2014 electrical infra",
+  "EST"
+ ],
+ "VST": [
+  "2026-08-06",
+  "Q2 \u2014 merchant power \u2192 datacenter PPAs",
+  "EST"
+ ],
+ "CEG": [
+  "2026-08-06",
+  "Q2 \u2014 nuclear PPAs",
+  "EST"
+ ],
+ "TLN": [
+  "2026-08-06",
+  "Q2 \u2014 nuclear-adjacent DC power",
+  "EST"
+ ],
+ "NRG": [
+  "2026-08-06",
+  "Q2 \u2014 retail+gen AI load",
+  "EST"
+ ],
+ "PWR": [
+  "2026-07-30",
+  "Q2 \u2014 grid build labor",
+  "EST"
+ ],
+ "SMR": [
+  None,
+  "Undated SMR orders \u2014 lotto until dated",
+  "EST"
+ ],
+ "MOD": [
+  "2026-08-04",
+  "FQ1 \u2014 datacenter cooling segment",
+  "EST"
+ ],
+ "NVT": [
+  "2026-07-31",
+  "Q2 \u2014 liquid cooling/enclosures",
+  "EST"
+ ],
+ "EQIX": [
+  "2026-07-29",
+  "Q2 \u2014 interconnection + AI colo",
+  "EST"
+ ],
+ "DLR": [
+  "2026-07-24",
+  "Q2 \u2014 hyperscale leasing",
+  "EST"
+ ],
+ "SYM": [
+  "2026-08-05",
+  "FQ3 \u2014 warehouse robotics backlog",
+  "EST"
+ ],
+ "AVAV": [
+  "2026-09-02",
+  "FQ1 \u2014 autonomous defense",
+  "EST"
+ ],
+ "AI": [
+  "2026-09-02",
+  "FQ1 \u2014 enterprise AI apps (show-me)",
+  "EST"
+ ]
 }
-# IV seeds (%) when no live chain IV; crush = post-event IV multiplier
-IV_SEED = {"NVTS":95,"CRWV":85,"MU":75,"MRVL":55,"AMD":48,"OKTA":45,"AVGO":42,
-           "SERV":110,"RR":120,"ONDS":95,"AAOI":80,"POET":100,"CBRS":75,"IONQ":100,
-           "TEM":85,"QBTS":110,"RGTI":115,"RXRX":110,"SOUN":95,"HIMX":65,"VICR":60,
-           "POWI":45,"MPWR":45,"CRUS":45,"AMKR":55,"AEHR":110,"FORM":55,"TTMI":55,
-           "SNDK":75,"SITM":60,"CEVA":70,"AIP":80,"VUZI":130,"SLAB":50,"LSCC":55,
-           "AMBA":60}
+IV_SEED = {
+ "NVTS": 95,
+ "CRWV": 85,
+ "MU": 75,
+ "MRVL": 55,
+ "AMD": 48,
+ "OKTA": 45,
+ "AVGO": 42,
+ "SERV": 110,
+ "RR": 120,
+ "ONDS": 95,
+ "AAOI": 80,
+ "POET": 100,
+ "CBRS": 75,
+ "IONQ": 100,
+ "TEM": 85,
+ "QBTS": 110,
+ "RGTI": 115,
+ "RXRX": 110,
+ "SOUN": 95,
+ "HIMX": 65,
+ "VICR": 60,
+ "POWI": 45,
+ "MPWR": 45,
+ "CRUS": 45,
+ "AMKR": 55,
+ "AEHR": 110,
+ "FORM": 55,
+ "TTMI": 55,
+ "SNDK": 75,
+ "SITM": 60,
+ "CEVA": 70,
+ "AIP": 80,
+ "VUZI": 130,
+ "SLAB": 50,
+ "LSCC": 55,
+ "AMBA": 60,
+ "TSM": 35,
+ "ASML": 38,
+ "ORCL": 38,
+ "PLTR": 60,
+ "SNOW": 55,
+ "ANET": 45,
+ "SNPS": 38,
+ "CDNS": 38,
+ "ALAB": 75,
+ "CRDO": 70,
+ "COHR": 55,
+ "SMCI": 75,
+ "CLS": 55,
+ "FN": 50,
+ "ON": 50,
+ "STM": 45,
+ "TXN": 30,
+ "ADI": 32,
+ "LRCX": 45,
+ "AMAT": 45,
+ "KLAC": 42,
+ "WDC": 55,
+ "TER": 45,
+ "VRT": 55,
+ "GEV": 42,
+ "ETN": 32,
+ "VST": 55,
+ "CEG": 45,
+ "TLN": 55,
+ "NRG": 42,
+ "PWR": 38,
+ "SMR": 110,
+ "MOD": 55,
+ "NVT": 40,
+ "EQIX": 28,
+ "DLR": 30,
+ "SYM": 70,
+ "AVAV": 60,
+ "AI": 80,
+ "TSM": 35,
+ "ASML": 38,
+ "ORCL": 38,
+ "PLTR": 60,
+ "SNOW": 55,
+ "ANET": 45,
+ "SNPS": 38,
+ "CDNS": 38,
+ "ALAB": 75,
+ "CRDO": 70,
+ "COHR": 55,
+ "SMCI": 75,
+ "CLS": 55,
+ "FN": 50,
+ "ON": 50,
+ "STM": 45,
+ "TXN": 30,
+ "ADI": 32,
+ "LRCX": 45,
+ "AMAT": 45,
+ "KLAC": 42,
+ "WDC": 55,
+ "TER": 45,
+ "VRT": 55,
+ "GEV": 42,
+ "ETN": 32,
+ "VST": 55,
+ "CEG": 45,
+ "TLN": 55,
+ "NRG": 42,
+ "PWR": 38,
+ "SMR": 110,
+ "MOD": 55,
+ "NVT": 40,
+ "EQIX": 28,
+ "DLR": 30,
+ "SYM": 70,
+ "AVAV": 60,
+ "AI": 80
+}
 def iv_seed(t):  return IV_SEED.get(t, 40 if t in TIERS["core"] else 70)
 def crush_of(t): return 0.90 if CAT.get(t,(None,))[0] is None or "PR" in (CAT.get(t,("","",""))[1]) else 0.80
 # Scenario seeds (catalyst-day % move): per-name for terminal 7, tier default otherwise
@@ -659,6 +1259,7 @@ def selftest():
     def ck(name,cond,detail=""):
         (P if cond else F).append((name,detail))
     # BS parity vs session-verified constants
+    ck("universe >= 100 names", len(ALL) >= 100)
     ck("BS call parity (MRVL 300C)",abs(bs_call(274,300,106/365,.55)-23.52)<0.05,f"{bs_call(274,300,106/365,.55):.2f}")
     ck("BS put-call parity",abs(bs_put(100,100,0.5,0.4)-(bs_call(100,100,0.5,0.4)-100+100*math.exp(-0.04*0.5)))<1e-9)
     # chain parser (both API shapes)
