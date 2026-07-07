@@ -166,7 +166,7 @@ footer{margin:16px 0 0;font-size:10px;color:var(--dim);line-height:1.6}
 <body>
 <header>
   <h1>IRFTEK <span id="feedtag" class="feedtag seed">SEEDS</span><button class="rbtn" onclick="refreshTier()">⟳ refresh</button></h1>
-  <div class="sub" id="hdr">v5.0 · zelfstandig · settings-driven · rolling horizon · daily-narrated 30d paths · the honest pie</div>
+  <div class="sub" id="hdr">v5.1 · zelfstandig · plan-layer: NAV → blotter · daily-narrated 30d paths · the honest pie</div>
 </header>
 <main id="view"></main>
 <nav>
@@ -298,6 +298,23 @@ function lcardFor(t){
  return {K,prem:Math.round(prem*100)/100,dlt:Math.round(dlt*100)/100,
   ws:ws.toISOString().slice(5,10),we:we.toISOString().slice(5,10),cat:c[0].slice(5),conf:c[2],
   node:gnode?gnode.id+(D(gnode.end)>=cd?"-gated":"-adjacent"):"—"}}
+function planBook(){
+ const nav=CFG.nav,riskCap=CFG.lottoRisk/100,hardCap=riskCap*2;
+ const rows=[],skip=[];
+ for(const t of focusList()){
+  const L=lcardFor(t);if(!L)continue;
+  const cost=L.prem*100;
+  const nCon=Math.max(1,Math.floor(nav*riskCap/cost));
+  const frac=nCon*cost/nav;
+  if(cost/nav>hardCap){skip.push({t,why:`min ticket ${(cost/nav*100).toFixed(1)}% NAV > cap ${(hardCap*100).toFixed(0)}%`});continue}
+  rows.push({t,K:L.K,prem:L.prem,dlt:L.dlt,nCon:Math.min(nCon,Math.floor(nav*hardCap/cost))||1,
+   cost:Math.round(Math.min(nCon,Math.floor(nav*hardCap/cost)||1)*cost),
+   frac:Math.round(frac*1000)/10,ws:L.ws,we:L.we,cat:L.cat,conf:L.conf,node:L.node});
+ }
+ rows.sort((a,b)=>D("2026-"+a.ws)-D("2026-"+b.ws));
+ let cash=0;rows.forEach(r=>cash+=r.cost);
+ return {rows,skip,cash,nav,conc:CFG.maxConc}}
+window.planBook=planBook;
 function focusList(){
  return ALL.filter(t=>{
   const n=DB[t];const px=n.px;if(!px||px>CFG.pxMax)return false;
@@ -313,8 +330,8 @@ const LSX=(()=>{try{const l=window.localStorage;l.setItem("__t","1");l.removeIte
 let _MEM={};
 function lsGet(k,d){if(LSX){try{return JSON.parse(LSX.getItem(k))??d}catch(e){return d}}return _MEM[k]??d}
 function lsSet(k,v){if(LSX)LSX.setItem(k,JSON.stringify(v));else _MEM[k]=v}
-const CFG_DEF={horizon:44,stanceMin:55,otm:12,dltLo:0.22,dltHi:0.55,pxMax:55,ivMin:55,multMin:1.7,
- lottoRisk:1,coreRisk:3,maxConc:3,digest:45,rampW:2,printW:8,crush:0.6,r:4,
+const CFG_DEF={nav:5000,horizon:44,stanceMin:55,otm:12,dltLo:0.22,dltHi:0.55,pxMax:55,ivMin:55,multMin:1.7,
+ lottoRisk:2,coreRisk:3,maxConc:3,digest:45,rampW:2,printW:8,crush:0.6,r:4,
  macro:[{d:"2026-07-29",lbl:"FOMC (Warsh)"},{d:"2026-09-16",lbl:"FOMC"}]};
 let CFG=Object.assign({},CFG_DEF,lsGet("irftek_cfg_v1",{}));
 function saveCfg(){lsSet("irftek_cfg_v1",CFG)}
@@ -884,7 +901,7 @@ function vMesh(){
 function setCfg(k,v){
  const num=parseFloat(v);
  const clamp={horizon:[10,120],stanceMin:[0,100],otm:[3,30],dltLo:[0.05,0.5],dltHi:[0.2,0.9],
-  pxMax:[5,5000],ivMin:[10,200],multMin:[1,5],lottoRisk:[0.25,5],coreRisk:[0.5,10],maxConc:[1,10],
+  pxMax:[5,5000],nav:[500,10000000],ivMin:[10,200],multMin:[1,5],lottoRisk:[0.25,5],coreRisk:[0.5,10],maxConc:[1,10],
   digest:[0,80],printW:[2,15],rampW:[1,5],crush:[0.3,1],r:[0,10]}[k];
  if(clamp&&isFinite(num))CFG[k]=Math.max(clamp[0],Math.min(clamp[1],num));
  saveCfg();paint()}
@@ -907,6 +924,7 @@ function vSettings(){
  <div class="card"><div class="eyebrow">FOCUS FILTER</div>
   <div class="wrow">${num("pxMax","px ≤")}${num("ivMin","IV ≥")}${num("multMin","MULT ≥")}${num("otm","OTM %")}</div>
   <div class="wrow">${num("dltLo","Δ min")}${num("dltHi","Δ max")}</div></div>
+ <div class="card"><div class="eyebrow">BANKROLL</div><div class="wrow">${num("nav","NAV $")}</div></div>
  <div class="card"><div class="eyebrow">RISK / GATES</div>
   <div class="wrow">${num("stanceMin","stance ≥")}${num("lottoRisk","lotto %NAV")}${num("coreRisk","core %NAV")}${num("maxConc","max conc")}</div></div>
  <div class="card"><div class="eyebrow">MACRO DATES · dent the paths</div>${macro}
@@ -924,6 +942,14 @@ let VIEW="brief",TIER="focus",CUR=null,SRCH="",SORTM="gate";
 function go(v,t){VIEW=v;if(t)CUR=t;paint()}
 function stChip(n){const s=n.state;const m={COILED:["sC","COILED"],BASING:["sB","BASING"],EXTENDED:["sE","EXTEND"],NOSETUP:["sN","NO SET"],VERIFY:["sV","VERIFY"]}[s]||["sV",s];
  return`<span class="st ${m[0]}">${m[1]}${n.rdy!==null&&s!=="VERIFY"?"·"+Math.round(n.rdy):""}</span>`}
+function vPlanCard(){
+ const P=planBook();
+ if(!P.rows.length)return"";
+ const rr=P.rows.map(r=>`<div class="cal"><span class="d">${r.ws}→${r.we}</span><span class="t">${r.t}</span>
+  <span class="l">${r.nCon}× ${r.K}C @$${r.prem} = $${r.cost} (${r.frac}%) · ${r.node}</span></div>`).join("");
+ const sk=P.skip.length?`<div class="gline" style="color:var(--ext)">excluded: ${P.skip.map(s=>s.t+" ("+s.why+")").join(" · ")}</div>`:"";
+ return `<div class="card"><div class="eyebrow">THE BOOK @ NAV $${P.nav} · lotto ${CFG.lottoRisk}%/ticket · ≤${P.conc} concurrent · fire only COILED+stance≥${CFG.stanceMin} in window</div>
+ ${rr}<div class="gline"><b>max cash if all fire: $${P.cash} (${Math.round(P.cash/P.nav*100)}%)</b> · TP 4× pre-print · exit print+1 · straddlers half-size until N3</div>${sk}</div>`}
 function vBrief(){
  let names=TIER==="all"?ALL:TIER==="focus"?focusList():TIERS[TIER];
  if(SRCH){const q=SRCH.toUpperCase();
@@ -1123,6 +1149,10 @@ async function systemTest(){
  L("settings view renders",vSettings().includes("FOCUS FILTER")&&vSettings().includes("ASSUMPTION"));
  L("mesh view 80+ rows",vMesh().length>4000&&vMesh().includes("VRT"));
  L("universe 105 + grid 13",ALL.length===105&&TIERS.grid.length===13);
+ const PB=planBook();
+ L("plan: rows dated, cash ≤ NAV",PB.rows.length>=3&&PB.cash<=PB.nav,PB.rows.length+" rows · $"+PB.cash);
+ L("plan: every ticket within 2× risk cap",PB.rows.every(r=>r.cost/PB.nav<=CFG.lottoRisk/100*2+1e-9));
+ L("plan: NAV knob reshapes book",(()=>{const c0=planBook().cash;CFG.nav=50000;const c1=planBook().cash;CFG.nav=CFG_DEF.nav===5000?5000:CFG.nav;CFG.nav=5000;saveCfg();return c1>c0})());
  L("tree probs coherent",TREE.every(nn=>Math.abs(nn.br.reduce((a,x)=>a+x.p,0)-1)<0.03));
  Object.assign(DB.MRVL,sn);
  const el=document.getElementById("testout");
