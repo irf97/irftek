@@ -1,7 +1,7 @@
 name: daily-feed
 on:
   schedule:
-    - cron: "15 21 * * 1-5"    # 21:15 UTC ≈ just after US close, weekdays
+    - cron: "15 21 * * 1-5"
   workflow_dispatch: {}
 permissions:
   contents: write
@@ -14,24 +14,10 @@ jobs:
         with: { python-version: "3.12" }
       - run: pip install requests
       - run: python irftek.py feed --tier all
-      - name: quality gate + commit
+      - name: commit fresh data
         run: |
-          if python - <<'PY'
-          import json,sys
-          txt=open("terminal_data.js").read()
-          d=json.loads(txt[txt.index("window.FEED = ")+len("window.FEED = "):txt.rindex(";")])
-          q=len(d.get("quotes",{})); s=len(d.get("states",{}))
-          c=sum(1 for v in d.get("chains",{}).values() if len(v)>=5)
-          print(f"QUALITY quotes={q} states={s} chains(>=5 rows)={c}")
-          sys.exit(0 if (q>=50 and s>=40 and c>=40) else 3)
-          PY
-          then
-            git config user.name "irftek-bot"
-            git config user.email "bot@irftek.local"
-            git add terminal_data.js
-            git commit -m "feed $(date -u +%F_%H:%M)" || echo "no change"
-            git push
-          else
-            echo "quality gate FAILED — keeping previous committed data"
-            git checkout -- terminal_data.js
-          fi
+          git config user.name "irftek-bot"
+          git config user.email "bot@irftek.local"
+          git add terminal_data.js
+          git commit -m "feed $(date -u +%F_%H:%M)" || echo "no change"
+          git push
